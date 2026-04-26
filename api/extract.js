@@ -4,6 +4,27 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
+  const authHeader = req.headers.authorization;
+  if (!authHeader) return res.status(401).json({ error: 'Unauthorized: Missing token' });
+
+  const token = authHeader.split(' ')[1];
+  const supabaseUrl = process.env.SUPABASE_URL;
+  const supabaseAnon = process.env.SUPABASE_ANON_KEY;
+
+  if (!supabaseUrl || !supabaseAnon) {
+    return res.status(500).json({ error: 'Server misconfigured: Supabase variables missing' });
+  }
+
+  try {
+    const authRes = await fetch(`${supabaseUrl}/auth/v1/user`, {
+      headers: { 'Authorization': `Bearer ${token}`, 'apikey': supabaseAnon }
+    });
+    if (!authRes.ok) return res.status(401).json({ error: 'Unauthorized: Invalid token' });
+  } catch(e) {
+    return res.status(500).json({ error: 'Auth validation failed' });
+  }
+
+
   const { notes, meetingName, attendees } = req.body;
 
   if (!notes || notes.trim().length < 10) {

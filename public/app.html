@@ -324,7 +324,12 @@ async function doTranscribe(blob) {
     if (mn) fd.append('meetingName', mn);
     if (at) fd.append('attendees', at);
 
-    const r = await fetch('/api/transcribe', { method: 'POST', body: fd });
+    const { data: { session } } = await db.auth.getSession();
+    const r = await fetch('/api/transcribe', { 
+      method: 'POST', 
+      headers: { 'Authorization': `Bearer ${session?.access_token}` },
+      body: fd 
+    });
     const d = await r.json();
     if (!r.ok) throw new Error(d.error || 'Transcription failed');
 
@@ -348,8 +353,13 @@ async function runExtract() {
   hideErr(); setLoad(true);
   document.getElementById('resSection').style.display = 'none';
   try {
+    const { data: { session } } = await db.auth.getSession();
     const r = await fetch('/api/extract', {
-      method:'POST', headers:{'Content-Type':'application/json'},
+      method:'POST', 
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session?.access_token}`
+      },
       body: JSON.stringify({ notes, meetingName: document.getElementById('mName').value.trim(), attendees: document.getElementById('mAtten').value.trim() })
     });
     const d = await r.json();
