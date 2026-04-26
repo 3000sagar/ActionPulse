@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ActionPulse — Checkout</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<style>
+:root{--bg:#FAFAF7;--surface:#F5F3EE;--surface2:#EDE9E0;--border:rgba(26,24,20,0.08);--border-hover:rgba(26,24,20,0.15);--accent:#C4813A;--accent-dim:#F0E4D0;--green:#C4813A;--green-dim:rgba(196,129,58,0.1);--amber:#C4813A;--red:#C4813A;--text:#1A1814;--text-muted:#3D3A34;--text-dim:#7A7570;--radius:5px;--radius-sm:3px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'DM Mono',monospace;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+body::before{content:'';position:fixed;inset:0;background-image:repeating-linear-gradient(transparent, transparent 27px, var(--border) 28px);pointer-events:none;z-index:0}
+.checkout-wrap{position:relative;z-index:1;width:100%;max-width:460px;animation:fadeUp .5s ease both}
+.logo-row{display:flex;align-items:center;gap:9px;margin-bottom:32px;justify-content:center}
+.logo-icon{width:28px;height:28px;border-radius:7px;background:var(--accent);display:flex;align-items:center;justify-content:center}
+.logo-name{font-family:'Instrument Serif',serif;font-style:italic;font-size:18px;font-weight:800;color:var(--text);letter-spacing:-.4px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.card-top{padding:28px 28px 24px;border-bottom:1px solid var(--border)}
+.plan-switcher{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:24px}
+.plan-tab{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;cursor:pointer;text-align:center;transition:border-color .2s,background .2s}
+.plan-tab:hover{border-color:var(--border-hover)}
+.plan-tab.active{background:var(--accent-dim);border-color:var(--accent)}
+.plan-tab-name{font-family:'Instrument Serif',serif;font-style:italic;font-size:15px;font-weight:700;color:var(--text);margin-bottom:3px}
+.plan-tab-price{font-size:11px;color:var(--text-muted)}
+.plan-tab.active .plan-tab-name{color:var(--accent)}
+.order-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;font-size:13px;color:var(--text-muted)}
+.order-row.total{font-family:'Instrument Serif',serif;font-style:italic;font-weight:700;color:var(--text);font-size:17px;border-top:1px solid var(--border);padding-top:14px;margin-top:6px}
+.order-row span:last-child{color:var(--text)}
+.order-row.total span:last-child{color:var(--text);font-size:20px}
+.card-body{padding:24px 28px}
+.field-label{font-size:10px;letter-spacing:.08em;color:var(--text-dim);text-transform:uppercase;margin-bottom:7px}
+.field{margin-bottom:16px}
+input[type=text],input[type=email]{background:var(--surface2);border:none;border-bottom:1px solid var(--border);border-radius:var(--radius-sm) var(--radius-sm) 0 0;color:var(--text);font-family:'DM Mono',monospace;font-size:13px;padding:11px 14px;width:100%;outline:none;transition:border-color .2s}
+input[type=text]:focus,input[type=email]:focus{border-color:var(--accent)}
+input::placeholder{color:var(--text-dim)}
+.btn-pay{width:100%;padding:14px;border-radius:var(--radius-sm);font-family:'Instrument Serif',serif;font-style:italic;font-size:16px;font-weight:700;cursor:pointer;transition:opacity .2s,transform .1s;border:none;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;gap:10px;margin-top:4px}
+.btn-pay:hover{opacity:.88}
+.btn-pay:active{transform:scale(.98)}
+.btn-pay:disabled{opacity:.4;cursor:not-allowed}
+.spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:none}
+.trust-row{display:flex;align-items:center;justify-content:center;gap:18px;margin-top:18px;flex-wrap:wrap}
+.trust-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text-dim)}
+.trust-item svg{width:13px;height:13px;flex-shrink:0}
+.back-link{display:block;text-align:center;margin-top:20px;font-size:12px;color:var(--text-dim);text-decoration:none;transition:color .2s}
+.back-link:hover{color:var(--text-muted)}
+.success-state{display:none;text-align:center;padding:40px 28px}
+.success-icon{width:56px;height:56px;border-radius:50%;background:var(--green-dim);border:1px solid rgba(0,229,160,.3);display:flex;align-items:center;justify-content:center;margin:0 auto 20px}
+.success-title{font-family:'Instrument Serif',serif;font-style:italic;font-size:24px;font-weight:800;color:var(--text);margin-bottom:8px}
+.success-sub{font-size:13px;color:var(--text-muted);line-height:1.65;margin-bottom:24px}
+.btn-go{display:inline-block;background:var(--accent);border:none;border-radius:var(--radius-sm);color:#fff;font-family:'Instrument Serif',serif;font-style:italic;font-size:15px;font-weight:700;padding:11px 24px;cursor:pointer;text-decoration:none}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="checkout-wrap">
+  <div class="logo-row">
+    <div class="logo-icon">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M3 8h7M3 12h5" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/><circle cx="13" cy="11" r="2.5" fill="#fff" opacity=".9"/><path d="M12.3 11l.5.5.9-.9" stroke="#7c6bff" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <span class="logo-name">ActionPulse</span>
+  </div>
+
+  <div class="card" id="checkoutCard">
+    <div class="card-top">
+
+      <div class="plan-switcher">
+        <div class="plan-tab active" id="tab-pro" onclick="selectPlan('pro')">
+          <div class="plan-tab-name">Pro</div>
+          <div class="plan-tab-price">₹799 / month</div>
+        </div>
+        <div class="plan-tab" id="tab-team" onclick="selectPlan('team')">
+          <div class="plan-tab-name">Team</div>
+          <div class="plan-tab-price">₹2,499 / month</div>
+        </div>
+      </div>
+
+      <div class="order-row"><span>Plan</span><span id="summaryPlan">Pro</span></div>
+      <div class="order-row"><span>Billing</span><span>Monthly</span></div>
+      <div class="order-row"><span>GST (18%)</span><span id="summaryGst">₹144</span></div>
+      <div class="order-row total"><span>Total today</span><span id="summaryTotal">₹943</span></div>
+    </div>
+
+    <div class="card-body">
+      <div class="field">
+        <div class="field-label">Full name</div>
+        <input type="text" id="userName" placeholder="Rahul Sharma">
+      </div>
+      <div class="field">
+        <div class="field-label">Email</div>
+        <input type="email" id="userEmail" placeholder="rahul@company.com">
+      </div>
+
+      <button class="btn-pay" id="payBtn" onclick="startPayment()">
+        <div class="spinner" id="spinner"></div>
+        <span id="payBtnText">Pay ₹943 with Razorpay</span>
+      </button>
+
+      <div class="trust-row">
+        <span class="trust-item">
+          <svg viewBox="0 0 13 13" fill="none"><path d="M6.5 1l1.5 3.1 3.4.5-2.45 2.4.58 3.38L6.5 9l-3.03 1.38.58-3.38L1.6 4.6l3.4-.5L6.5 1z" stroke="#00e5a0" stroke-width="1.1" stroke-linejoin="round"/></svg>
+          UPI accepted
+        </span>
+        <span class="trust-item">
+          <svg viewBox="0 0 13 13" fill="none"><rect x="1.5" y="3.5" width="10" height="7" rx="1.2" stroke="currentColor" stroke-width="1.1"/><path d="M1.5 6h10" stroke="currentColor" stroke-width="1.1"/></svg>
+          Cards &amp; net banking
+        </span>
+        <span class="trust-item">
+          <svg viewBox="0 0 13 13" fill="none"><path d="M6.5 1.5L8 5h3.5l-2.8 2 1 3.5L6.5 8.5 4 10.5l1-3.5L2.5 5H6l.5-3.5z" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round"/></svg>
+          Cancel anytime
+        </span>
+      </div>
+    </div>
+
+    <div class="success-state" id="successState">
+      <div class="success-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5 9-9" stroke="#00e5a0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="success-title">Payment successful!</div>
+      <div class="success-sub">Your <strong id="successPlan">Pro</strong> subscription is now active. A receipt has been sent to your email.</div>
+      <a class="btn-go" href="/app">Open ActionPulse →</a>
+    </div>
+  </div>
+
+  <a class="back-link" href="/#pricing">← Back to pricing</a>
+</div>
+
+<script>
+const PLANS = {
+  pro:  { name: 'Pro',  base: 799  },
+  team: { name: 'Team', base: 2499 }
+};
+
+let currentPlan = 'pro';
+
+// Read plan from URL ?plan=pro
+const urlPlan = new URLSearchParams(location.search).get('plan');
+if (urlPlan && PLANS[urlPlan]) selectPlan(urlPlan);
+
+function selectPlan(plan) {
+  currentPlan = plan;
+  document.querySelectorAll('.plan-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + plan).classList.add('active');
+  const { name, base } = PLANS[plan];
+  const gst = Math.round(base * 0.18);
+  const total = base + gst;
+  document.getElementById('summaryPlan').textContent = name;
+  document.getElementById('summaryGst').textContent = '₹' + gst.toLocaleString('en-IN');
+  document.getElementById('summaryTotal').textContent = '₹' + total.toLocaleString('en-IN');
+  document.getElementById('payBtnText').textContent = 'Pay ₹' + total.toLocaleString('en-IN') + ' with Razorpay';
+}
+
+function setLoading(on) {
+  document.getElementById('payBtn').disabled = on;
+  document.getElementById('spinner').style.display = on ? 'block' : 'none';
+  if (!on) {
+    const { base } = PLANS[currentPlan];
+    const total = base + Math.round(base * 0.18);
+    document.getElementById('payBtnText').textContent = 'Pay ₹' + total.toLocaleString('en-IN') + ' with Razorpay';
+  } else {
+    document.getElementById('payBtnText').textContent = 'Opening Razorpay...';
+  }
+}
+
+async function startPayment() {
+  const name  = document.getElementById('userName').value.trim();
+  const email = document.getElementById('userEmail').value.trim();
+
+  if (!name)  { alert('Please enter your name.'); return; }
+  if (!email || !email.includes('@')) { alert('Please enter a valid email.'); return; }
+
+  setLoading(true);
+
+  try {
+    // Create order on your backend
+    const res = await fetch('/api/create-order', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ plan: currentPlan, name, email })
+    });
+
+    const order = await res.json();
+    if (!res.ok) throw new Error(order.error || 'Could not create order');
+
+    setLoading(false);
+
+    const { base } = PLANS[currentPlan];
+    const totalPaise = (base + Math.round(base * 0.18)) * 100;
+
+    const options = {
+      key: order.key_id,               // Your Razorpay Key ID from backend
+      amount: totalPaise,
+      currency: 'INR',
+      name: 'ActionPulse',
+      description: PLANS[currentPlan].name + ' Plan — Monthly',
+      order_id: order.razorpay_order_id,
+      prefill: { name, email },
+      theme: { color: '#7c6bff' },
+      modal: { backdropclose: false },
+      handler: function(response) {
+        // Payment success — verify on backend
+        verifyPayment(response, name, email);
+      }
+    };
+
+    const rzp = new Razorpay(options);
+    rzp.on('payment.failed', function(r) {
+      alert('Payment failed: ' + r.error.description);
+      setLoading(false);
+    });
+    rzp.open();
+
+  } catch (e) {
+    alert('Error: ' + e.message);
+    setLoading(false);
+  }
+}
+
+async function verifyPayment(response, name, email) {
+  setLoading(true);
+  try {
+    const res = await fetch('/api/verify-payment', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        razorpay_order_id:   response.razorpay_order_id,
+        razorpay_payment_id: response.razorpay_payment_id,
+        razorpay_signature:  response.razorpay_signature,
+        plan: currentPlan,
+        name, email
+      })
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Verification failed');
+
+    // Show success
+    document.getElementById('successPlan').textContent = PLANS[currentPlan].name;
+    document.querySelector('.card-top').style.display = 'none';
+    document.querySelector('.card-body').style.display = 'none';
+    document.getElementById('successState').style.display = 'block';
+
+    // Save to localStorage so /app knows user is paid
+    localStorage.setItem('ap_plan', currentPlan);
+    localStorage.setItem('ap_email', email);
+
+  } catch(e) {
+    alert('Payment verified but activation failed. Email hello@actionpulse.in with your receipt.');
+  } finally {
+    setLoading(false);
+  }
+}
+</script>
+</body>
+</html>

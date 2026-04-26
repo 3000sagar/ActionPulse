@@ -1,0 +1,13 @@
+{
+  "name": "actionpulse",
+  "version": "1.0.0",
+  "description": "Meeting notes to action items SaaS",
+  "private": true,
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "razorpay": "^2.9.2"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

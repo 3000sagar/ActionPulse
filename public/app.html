@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ActionPulse — App</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--bg:#FAFAF7;--surface:#F5F3EE;--surface2:#EDE9E0;--border:rgba(26,24,20,0.08);--border-hover:rgba(26,24,20,0.15);--accent:#C4813A;--accent-dim:#F0E4D0;--green:#537853;--green-dim:rgba(83,120,83,0.1);--amber:#C4813A;--amber-dim:rgba(196,129,58,0.1);--red:#A64B42;--red-dim:rgba(166,75,66,0.1);--text:#1A1814;--text-muted:#3D3A34;--text-dim:#7A7570;--radius:5px;--radius-sm:3px;--sidebar:290px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'DM Mono',monospace;min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background-image:repeating-linear-gradient(transparent, transparent 27px, var(--border) 28px);pointer-events:none;z-index:0}
+.layout{display:flex;min-height:100vh;position:relative;z-index:1}
+.sidebar{width:var(--sidebar);flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:20;transition:transform .3s}
+.sidebar-head{padding:14px 14px 12px;border-bottom:1px solid var(--border)}
+.s-logo{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.logo-icon{width:26px;height:26px;border-radius:6px;background:var(--accent);display:flex;align-items:center;justify-content:center}
+.logo-name{font-family:'Instrument Serif',serif;font-style:italic;font-size:14px;font-weight:800;letter-spacing:-.3px}
+.user-row{display:flex;align-items:center;gap:8px}
+.u-avatar{width:26px;height:26px;border-radius:50%;background:var(--accent-dim);display:flex;align-items:center;justify-content:center;font-family:'Instrument Serif',serif;font-style:italic;font-size:10px;font-weight:700;color:var(--accent);flex-shrink:0;border:1px solid rgba(124,107,255,.25)}
+.u-email{font-size:11px;color:var(--text-muted);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.btn-so{background:transparent;border:none;cursor:pointer;color:var(--text-dim);font-size:10px;padding:3px 5px;border-radius:4px;white-space:nowrap;transition:color .15s;font-family:'DM Mono',monospace}
+.btn-so:hover{color:var(--red)}
+.s-section{font-size:10px;letter-spacing:.08em;color:var(--text-dim);text-transform:uppercase;padding:12px 14px 7px;display:flex;align-items:center;justify-content:space-between}
+.h-count{background:var(--surface2);border-radius:8px;padding:1px 6px;font-size:10px;color:var(--text-muted)}
+.h-list{flex:1;overflow-y:auto;padding:0 6px 12px}
+.h-list::-webkit-scrollbar{width:3px}
+.h-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.h-item{border-radius:var(--radius-sm);padding:9px 9px;cursor:pointer;transition:background .15s;margin-bottom:3px;position:relative;display:flex;align-items:flex-start;gap:8px}
+.h-item:hover{background:var(--surface2)}
+.h-item.active{background:var(--accent-dim);border:1px solid rgba(124,107,255,.2)}
+.h-ico{width:22px;height:22px;border-radius:5px;background:var(--surface2);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--text-muted)}
+.h-ico svg{width:11px;height:11px}
+.h-body{flex:1;min-width:0}
+.h-name{font-family:'Instrument Serif',serif;font-style:italic;font-size:11px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:3px}
+.h-meta{font-size:10px;color:var(--text-dim);display:flex;gap:6px;align-items:center}
+.h-src{font-size:9px;padding:1px 5px;border-radius:6px}
+.h-src-audio{background:rgba(124,107,255,.15);color:var(--accent)}
+.h-src-text{background:var(--surface2);color:var(--text-dim)}
+.h-del{position:absolute;top:7px;right:7px;background:transparent;border:none;cursor:pointer;color:var(--text-dim);padding:3px;border-radius:4px;opacity:0;transition:opacity .15s,color .15s}
+.h-item:hover .h-del{opacity:1}
+.h-del:hover{color:var(--red)}
+.h-empty{padding:20px 10px;text-align:center;font-size:11px;color:var(--text-dim);line-height:1.65}
+.main{margin-left:var(--sidebar);flex:1;padding:28px 28px 80px;max-width:calc(100vw - var(--sidebar))}
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px}
+.t-title{font-family:'Instrument Serif',serif;font-style:italic;font-size:18px;font-weight:800;letter-spacing:-.5px}
+.t-right{display:flex;gap:7px}
+.btn-sm{background:transparent;border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-muted);padding:6px 11px;cursor:pointer;font-size:11px;display:flex;align-items:center;gap:5px;transition:border-color .2s,color .2s;font-family:'DM Mono',monospace}
+.btn-sm:hover{border-color:var(--border-hover);color:var(--text)}
+.btn-sm svg{width:12px;height:12px}
+.inp-tabs{display:flex;gap:4px;margin-bottom:10px}
+.inp-tab{background:transparent;border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-muted);padding:6px 12px;cursor:pointer;font-size:11px;font-family:'DM Mono',monospace;transition:all .2s;display:flex;align-items:center;gap:6px}
+.inp-tab:hover{border-color:var(--border-hover);color:var(--text)}
+.inp-tab.active{background:var(--accent-dim);border-color:rgba(196,129,58,0.4);color:var(--accent)}
+.inp-tab svg{width:12px;height:12px}
+.audio-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:14px;text-align:center;display:none}
+.audio-card.on{display:block}
+.a-title{font-family:'Instrument Serif',serif;font-style:italic;font-size:13px;font-weight:700;margin-bottom:5px}
+.a-sub{font-size:12px;color:var(--text-muted);margin-bottom:20px;line-height:1.55}
+.rec-btn{width:58px;height:58px;border-radius:50%;border:none;cursor:pointer;background:var(--red);display:flex;align-items:center;justify-content:center;margin:0 auto;transition:transform .15s}
+.rec-btn:hover{transform:scale(1.06)}
+.rec-btn.recording{animation:rpulse 1.4s ease infinite}
+.rec-btn .stop-ico{display:none}
+.rec-btn.recording .rec-ico{display:none}
+.rec-btn.recording .stop-ico{display:block}
+.rec-btn svg{width:20px;height:20px}
+@keyframes rpulse{0%,100%{box-shadow:0 0 0 0 rgba(255,95,109,.5)}50%{box-shadow:0 0 0 12px rgba(255,95,109,0)}}
+.rec-time{font-family:'Instrument Serif',serif;font-style:italic;font-size:26px;font-weight:800;letter-spacing:.05em;margin:14px 0 4px}
+.rec-stat{font-size:11px;color:var(--text-muted);min-height:14px}
+.upl-row{display:flex;align-items:center;justify-content:center;margin-top:14px;padding-top:14px;border-top:1px solid var(--border)}
+.upl-lbl{font-size:11px;color:var(--text-dim);cursor:pointer;display:flex;align-items:center;gap:5px;padding:6px 12px;border:1px dashed var(--border);border-radius:var(--radius-sm);transition:border-color .2s,color .2s}
+.upl-lbl:hover{border-color:var(--accent);color:var(--accent)}
+.upl-lbl svg{width:12px;height:12px}
+.transcript-box{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;margin-top:14px;font-size:12px;color:var(--text-muted);line-height:1.65;max-height:110px;overflow-y:auto;text-align:left;display:none}
+.transcript-box.on{display:block}
+.main-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:14px}
+.c-head{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.c-title{font-family:'Instrument Serif',serif;font-style:italic;font-size:12px;font-weight:700}
+.c-chars{font-size:11px;color:var(--text-dim)}
+textarea{background:var(--surface);border:none;resize:none;min-height:180px;padding:16px;font-size:13px;line-height:1.7;color:var(--text);font-family:'DM Mono',monospace;width:100%;outline:none}
+textarea::placeholder{color:var(--text-dim)}
+.c-foot{padding:11px 16px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:9px;flex-wrap:wrap}
+.ctx-row{display:flex;gap:7px;flex:1;flex-wrap:wrap}
+.ctx-inp{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:'DM Mono',monospace;font-size:12px;padding:7px 10px;width:145px;outline:none;transition:border-color .2s}
+.ctx-inp:focus{border-color:var(--accent)}
+.ctx-inp::placeholder{color:var(--text-dim)}
+.btn-run{background:var(--accent);border:none;border-radius:var(--radius-sm);color:#fff;font-family:'Instrument Serif',serif;font-style:italic;font-size:12px;font-weight:700;padding:9px 20px;cursor:pointer;transition:opacity .2s,transform .1s;display:flex;align-items:center;gap:7px}
+.btn-run:hover{opacity:.88}
+.btn-run:active{transform:scale(.97)}
+.btn-run:disabled{opacity:.4;cursor:not-allowed}
+.spinner{width:13px;height:13px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:none}
+.res-section{animation:fadeUp .5s ease both}
+.res-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.res-lbl{font-family:'Instrument Serif',serif;font-style:italic;font-size:11px;font-weight:700;color:var(--text-muted);letter-spacing:.06em;text-transform:uppercase}
+.res-meta{font-size:11px;color:var(--text-dim)}
+.sum-box{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:var(--radius);padding:13px 16px;margin-bottom:10px;font-size:13px;color:var(--text-muted);line-height:1.65}
+.sum-lbl{font-size:9px;letter-spacing:.1em;color:var(--accent);text-transform:uppercase;margin-bottom:5px}
+.a-grid{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
+.a-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:13px 15px;display:flex;gap:11px;align-items:flex-start;transition:border-color .2s;animation:fadeUp .4s ease both}
+.a-card:hover{border-color:var(--border-hover)}
+.p-badge{font-size:9px;font-weight:500;padding:2px 7px;border-radius:20px;white-space:nowrap;flex-shrink:0;margin-top:2px;letter-spacing:.04em;text-transform:uppercase}
+.p-high{background:var(--red-dim);color:var(--red);border:1px solid rgba(255,95,109,.2)}
+.p-medium{background:var(--amber-dim);color:var(--amber);border:1px solid rgba(255,181,71,.2)}
+.p-low{background:var(--green-dim);color:var(--green);border:1px solid rgba(0,229,160,.2)}
+.a-body{flex:1;min-width:0}
+.a-task{font-size:13px;font-family:'Instrument Serif',serif;font-style:italic;font-weight:600;color:var(--text);margin-bottom:5px;line-height:1.35}
+.a-meta{display:flex;gap:12px;flex-wrap:wrap}
+.m-chip{font-size:11px;color:var(--text-muted);display:flex;align-items:center;gap:4px}
+.m-chip svg{width:10px;height:10px;opacity:.6}
+.a-chk{width:17px;height:17px;border-radius:50%;border:1.5px solid var(--border-hover);cursor:pointer;flex-shrink:0;margin-top:2px;transition:all .2s;display:flex;align-items:center;justify-content:center}
+.a-chk:hover{border-color:var(--green)}
+.a-chk.done{background:var(--green);border-color:var(--green)}
+.a-chk.done svg{display:block}
+.a-chk svg{display:none;width:9px;height:9px}
+.a-card.done-card{opacity:.4}
+.a-card.done-card .a-task{text-decoration:line-through}
+.a-prompt{display:none;margin-top:10px;padding:10px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:11px;color:var(--text-muted);line-height:1.5;font-family:'DM Mono',monospace}
+.a-prompt strong{color:var(--text);font-family:'Instrument Serif',serif;font-style:italic;font-weight:600;margin-bottom:3px;display:block}
+.a-card:hover:not(.done-card) .a-prompt{display:block}
+.exp-bar{display:flex;gap:7px;flex-wrap:wrap}
+.btn-exp{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-muted);font-family:'DM Mono',monospace;font-size:11px;padding:7px 11px;cursor:pointer;transition:border-color .2s,color .2s;display:flex;align-items:center;gap:5px}
+.btn-exp:hover{border-color:var(--border-hover);color:var(--text)}
+.btn-exp svg{width:11px;height:11px}
+.err-box{background:var(--red-dim);border:1px solid rgba(255,95,109,.25);border-radius:var(--radius);padding:11px 15px;font-size:13px;color:var(--red);margin-bottom:12px;display:none}
+.toast{position:fixed;bottom:18px;right:18px;background:var(--surface2);border:1px solid var(--border-hover);border-radius:var(--radius-sm);padding:9px 15px;font-size:12px;color:var(--text);z-index:100;display:none}
+.s-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:19;backdrop-filter:blur(2px)}
+.btn-menu{display:none;background:transparent;border:1px solid var(--border);border-radius:var(--radius-sm);padding:6px;cursor:pointer;color:var(--text-muted)}
+.btn-menu svg{width:15px;height:15px;display:block}
+@media(max-width:768px){.sidebar{transform:translateX(-100%)}.sidebar.open{transform:translateX(0)}.s-overlay.open{display:block}.main{margin-left:0;max-width:100%;padding:18px 14px 60px}.btn-menu{display:flex;align-items:center}.ctx-row{flex-direction:column}.ctx-inp{width:100%}.btn-run{justify-content:center;width:100%}.c-foot{flex-direction:column;align-items:stretch}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="layout">
+
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-head">
+    <div class="s-logo">
+      <div class="logo-icon"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M3 8h7M3 12h5" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/><circle cx="13" cy="11" r="2.5" fill="#fff" opacity=".9"/></svg></div>
+      <span class="logo-name">ActionPulse</span>
+    </div>
+    <div class="user-row">
+      <div class="u-avatar" id="uAvatar">?</div>
+      <span class="u-email" id="uEmail">...</span>
+      <button class="btn-so" onclick="signOut()">Sign out</button>
+    </div>
+  </div>
+  <div class="s-section">History <span class="h-count" id="hCount">0</span></div>
+  <div class="h-list" id="hList"><div class="h-empty">Your meetings<br>will appear here.</div></div>
+</aside>
+
+<div class="s-overlay" id="sOverlay" onclick="closeSb()"></div>
+
+<main class="main">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:9px">
+      <button class="btn-menu" id="btnMenu" onclick="toggleSb()">
+        <svg viewBox="0 0 16 16" fill="none"><path d="M2 4h12M2 8h12M2 12h12" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+      </button>
+      <span class="t-title" id="pageTitle">New meeting</span>
+    </div>
+    <div class="t-right">
+      <button class="btn-sm" onclick="newMeeting()">
+        <svg viewBox="0 0 13 13" fill="none"><path d="M6.5 1v11M1 6.5h11" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+        New
+      </button>
+    </div>
+  </div>
+
+  <div class="inp-tabs">
+    <button class="inp-tab active" id="tText" onclick="switchMode('text')">
+      <svg viewBox="0 0 13 13" fill="none"><path d="M2 3h9M2 6h7M2 9h5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+      Paste notes
+    </button>
+    <button class="inp-tab" id="tAudio" onclick="switchMode('audio')">
+      <svg viewBox="0 0 13 13" fill="none"><rect x="4.5" y="1" width="4" height="7" rx="2" stroke="currentColor" stroke-width="1.2"/><path d="M2 7.5a4.5 4.5 0 009 0M6.5 12v-1" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+      Record audio
+    </button>
+  </div>
+
+  <!-- AUDIO CARD -->
+  <div class="audio-card" id="audioCard">
+    <div class="a-title">Record or upload your meeting</div>
+    <div class="a-sub">Speak naturally. We'll transcribe every word and extract all action items automatically — no typing needed.</div>
+    <button class="rec-btn" id="recBtn" onclick="toggleRec()">
+      <svg class="rec-ico" viewBox="0 0 24 24" fill="#fff"><circle cx="12" cy="12" r="6"/></svg>
+      <svg class="stop-ico" viewBox="0 0 24 24" fill="#fff"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
+    </button>
+    <div class="rec-time" id="recTime">0:00</div>
+    <div class="rec-stat" id="recStat">Click to start recording</div>
+    <div class="upl-row">
+      <label class="upl-lbl" for="audioFile">
+        <svg viewBox="0 0 13 13" fill="none"><path d="M6.5 9V2M4 4.5l2.5-2.5L9 4.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 10.5h9" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+        Upload audio / video file
+      </label>
+      <input type="file" id="audioFile" accept="audio/*,video/*" style="display:none" onchange="handleUpload(event)">
+    </div>
+    <div class="transcript-box" id="txBox"></div>
+  </div>
+
+  <!-- TEXT CARD -->
+  <div class="main-card" id="textCard">
+    <div class="c-head">
+      <span class="c-title">Meeting notes</span>
+      <span class="c-chars" id="chars">0 chars</span>
+    </div>
+    <textarea id="notesInput" placeholder="Paste your raw meeting notes here...&#10;&#10;Example: Discussed Q2 roadmap. John will set up user interviews by Friday. Sarah needs to finish competitor analysis by Monday. Rahul to send sprint planning invite today." oninput="updChars()"></textarea>
+    <div class="c-foot">
+      <div class="ctx-row">
+        <input type="text" class="ctx-inp" id="mName" placeholder="Meeting name">
+        <input type="text" class="ctx-inp" id="mAtten" placeholder="Attendees">
+      </div>
+      <button class="btn-run" id="runBtn" onclick="runExtract()">
+        <div class="spinner" id="spinner"></div>
+        <span id="btnTxt">Extract actions</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="err-box" id="errBox"></div>
+
+  <div class="res-section" id="resSection" style="display:none">
+    <div class="res-hdr">
+      <span class="res-lbl">Action items</span>
+      <span class="res-meta" id="resMeta"></span>
+    </div>
+    <div class="sum-box">
+      <div class="sum-lbl">Meeting summary</div>
+      <div id="sumTxt"></div>
+    </div>
+    <div class="a-grid" id="aGrid"></div>
+    <div class="exp-bar">
+      <button class="btn-exp" onclick="cpMd()"><svg viewBox="0 0 12 12" fill="none"><rect x="1" y="3" width="7" height="8" rx="1" stroke="currentColor" stroke-width="1.2"/><path d="M4 1h6a1 1 0 011 1v8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>Copy markdown</button>
+      <button class="btn-exp" onclick="cpJSON()"><svg viewBox="0 0 12 12" fill="none"><path d="M4 2H2a1 1 0 00-1 1v6a1 1 0 001 1h8a1 1 0 001-1V3a1 1 0 00-1-1H8M4 2V1h4v1M4 2h4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>Copy JSON</button>
+      <button class="btn-exp" onclick="clearAll()"><svg viewBox="0 0 12 12" fill="none"><path d="M2 3h8M5 3V2h2v1M4.5 3l.5 6h2l.5-6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Clear</button>
+    </div>
+  </div>
+</main>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const SUPABASE_URL  = 'YOUR_SUPABASE_URL';
+const SUPABASE_ANON = 'YOUR_SUPABASE_ANON_KEY';
+const { createClient } = supabase;
+const db = createClient(SUPABASE_URL, SUPABASE_ANON);
+
+let user = null, items = [], isAudio = false;
+let recorder, chunks = [], recInt, secs = 0;
+
+// AUTH
+(async () => {
+  const { data: { session } } = await db.auth.getSession();
+  if (!session) { location.href = '/login'; return; }
+  user = session.user;
+  const name = user.user_metadata?.full_name || user.email;
+  document.getElementById('uEmail').textContent  = user.email;
+  document.getElementById('uAvatar').textContent = name.charAt(0).toUpperCase();
+  loadHistory();
+})();
+
+async function signOut() { await db.auth.signOut(); location.href = '/login'; }
+
+// SIDEBAR
+function toggleSb() { document.getElementById('sidebar').classList.toggle('open'); document.getElementById('sOverlay').classList.toggle('open'); }
+function closeSb()  { document.getElementById('sidebar').classList.remove('open');  document.getElementById('sOverlay').classList.remove('open'); }
+
+// MODE SWITCH
+function switchMode(m) {
+  isAudio = m === 'audio';
+  document.getElementById('tText').classList.toggle('active', !isAudio);
+  document.getElementById('tAudio').classList.toggle('active', isAudio);
+  document.getElementById('textCard').style.display = isAudio ? 'none' : 'block';
+  document.getElementById('audioCard').classList.toggle('on', isAudio);
+}
+
+// RECORDING
+async function toggleRec() {
+  if (recorder && recorder.state === 'recording') { recorder.stop(); return; }
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    chunks = [];
+    recorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+    recorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
+    recorder.onstop = async () => {
+      stream.getTracks().forEach(t => t.stop());
+      const blob = new Blob(chunks, { type: 'audio/webm' });
+      setStat('Transcribing your recording...');
+      await doTranscribe(blob);
+    };
+    recorder.start(200);
+    secs = 0;
+    document.getElementById('recBtn').classList.add('recording');
+    setStat('Recording... tap to stop');
+    recInt = setInterval(() => {
+      secs++;
+      const m = Math.floor(secs/60), s = secs % 60;
+      document.getElementById('recTime').textContent = m + ':' + String(s).padStart(2,'0');
+    }, 1000);
+  } catch(e) { setStat('Mic access denied — please allow microphone'); }
+}
+
+function handleUpload(e) {
+  const f = e.target.files[0];
+  if (!f) return;
+  setStat('File loaded: ' + f.name + ' — transcribing...');
+  doTranscribe(f);
+}
+
+function setStat(t) { document.getElementById('recStat').textContent = t; }
+
+async function doTranscribe(blob) {
+  if (recorder && recorder.state === 'recording') { recorder.stop(); clearInterval(recInt); document.getElementById('recBtn').classList.remove('recording'); }
+  clearInterval(recInt);
+  setLoad(true);
+  hideErr();
+  try {
+    const fd = new FormData();
+    fd.append('audio', blob, 'audio.webm');
+    const mn = document.getElementById('mName').value.trim();
+    const at = document.getElementById('mAtten').value.trim();
+    if (mn) fd.append('meetingName', mn);
+    if (at) fd.append('attendees', at);
+
+    const r = await fetch('/api/transcribe', { method: 'POST', body: fd });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.error || 'Transcription failed');
+
+    const tb = document.getElementById('txBox');
+    tb.textContent = d.transcript || '';
+    tb.classList.add('on');
+    setStat('Done! Action items extracted below.');
+    items = d.action_items || [];
+    renderRes(d);
+    await save({ meeting_name: mn || 'Voice meeting', source: 'audio', transcript: d.transcript, summary: d.summary, action_items: d.action_items });
+  } catch(e) { showErr(e.message); setStat('Failed. Please try again.'); }
+  finally { setLoad(false); }
+}
+
+// TEXT EXTRACT
+function updChars() { document.getElementById('chars').textContent = document.getElementById('notesInput').value.length.toLocaleString() + ' chars'; }
+
+async function runExtract() {
+  const notes = document.getElementById('notesInput').value.trim();
+  if (!notes) { showErr('Paste your meeting notes first.'); return; }
+  hideErr(); setLoad(true);
+  document.getElementById('resSection').style.display = 'none';
+  try {
+    const r = await fetch('/api/extract', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ notes, meetingName: document.getElementById('mName').value.trim(), attendees: document.getElementById('mAtten').value.trim() })
+    });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.error || 'Error');
+    items = d.action_items || [];
+    renderRes(d);
+    await save({ meeting_name: document.getElementById('mName').value.trim() || 'Untitled', source: 'text', transcript: notes, summary: d.summary, action_items: d.action_items });
+  } catch(e) { showErr(e.message); }
+  finally { setLoad(false); }
+}
+
+// RENDER RESULTS
+function renderRes(d) {
+  document.getElementById('sumTxt').textContent = d.summary || '';
+  document.getElementById('resMeta').textContent = (d.action_items?.length||0) + ' items found';
+  const g = document.getElementById('aGrid');
+  g.innerHTML = '';
+  (d.action_items||[]).forEach((item, i) => {
+    const c = document.createElement('div');
+    c.className = 'a-card'; c.style.animationDelay = (i*.06)+'s';
+    const pc = item.priority==='high'?'p-high':item.priority==='medium'?'p-medium':'p-low';
+    c.innerHTML = `
+      <div class="a-chk" onclick="this.classList.toggle('done');this.closest('.a-card').classList.toggle('done-card')" title="Done">
+        <svg viewBox="0 0 10 10" fill="none"><path d="M1.5 5l2.5 2.5 4.5-5" stroke="#0a0a0f" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="a-body">
+        <div class="a-task">${esc(item.task)}</div>
+        <div class="a-meta">
+          <span class="m-chip"><svg viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="4.5" stroke="currentColor" stroke-width="1.2"/><path d="M6 3.5V6l2 1.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>${esc(item.deadline)}</span>
+          <span class="m-chip"><svg viewBox="0 0 12 12" fill="none"><circle cx="6" cy="4" r="2" stroke="currentColor" stroke-width="1.2"/><path d="M2 10c0-2.2 1.8-4 4-4s4 1.8 4 4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>${esc(item.owner)}</span>
+        </div>
+        ${item.ai_prompt ? `<div class="a-prompt"><strong>Best for ${esc(item.ai_platform || 'AI')}</strong>${esc(item.ai_prompt)}</div>` : ''}
+      </div>
+      <span class="p-badge ${pc}">${esc(item.priority)}</span>`;
+    g.appendChild(c);
+  });
+  document.getElementById('resSection').style.display = 'block';
+  setTimeout(()=>document.getElementById('resSection').scrollIntoView({behavior:'smooth',block:'start'}),80);
+}
+
+// HISTORY
+async function save(payload) {
+  if (!user) return;
+  await db.from('meetings').insert({ user_id:user.id, ...payload });
+  loadHistory();
+}
+
+async function loadHistory() {
+  if (!user) return;
+  const { data } = await db.from('meetings').select('id,meeting_name,source,summary,action_items,created_at').eq('user_id',user.id).order('created_at',{ascending:false}).limit(60);
+  const list = document.getElementById('hList');
+  document.getElementById('hCount').textContent = data?.length || 0;
+  if (!data?.length) { list.innerHTML = '<div class="h-empty">Your meetings<br>will appear here.</div>'; return; }
+  list.innerHTML = data.map(m => {
+    const d = new Date(m.created_at);
+    const lbl = d.toLocaleDateString('en-IN',{day:'numeric',month:'short'});
+    const cnt = m.action_items?.length||0;
+    const ico = m.source==='audio'
+      ? '<svg viewBox="0 0 12 12" fill="none"><rect x="3.5" y="1" width="5" height="6" rx="2.5" stroke="currentColor" stroke-width="1.1"/><path d="M2 7a4 4 0 008 0M6 11V9" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg>'
+      : '<svg viewBox="0 0 12 12" fill="none"><path d="M2 3h8M2 6h6M2 9h4" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg>';
+    const sc = m.source==='audio'?'h-src-audio':'h-src-text';
+    return `<div class="h-item" onclick="loadMtg('${m.id}',this)" data-id="${m.id}">
+      <div class="h-ico">${ico}</div>
+      <div class="h-body">
+        <div class="h-name">${esc(m.meeting_name||'Untitled')}</div>
+        <div class="h-meta"><span>${lbl}</span><span>${cnt} action${cnt!==1?'s':''}</span><span class="h-src ${sc}">${m.source}</span></div>
+      </div>
+      <button class="h-del" onclick="delMtg('${m.id}',event)" title="Delete">
+        <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2 3h8M5 3V2h2v1M4.5 3l.5 6h2l.5-6" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>`;
+  }).join('');
+}
+
+async function loadMtg(id, el) {
+  document.querySelectorAll('.h-item').forEach(i=>i.classList.remove('active'));
+  el.classList.add('active'); closeSb();
+  const { data:m } = await db.from('meetings').select('*').eq('id',id).single();
+  if (!m) return;
+  document.getElementById('mName').value = m.meeting_name||'';
+  document.getElementById('pageTitle').textContent = m.meeting_name||'Meeting';
+  if (m.source==='audio') {
+    switchMode('audio');
+    const tb = document.getElementById('txBox');
+    tb.textContent = m.transcript||''; tb.classList.add('on');
+    setStat('Loaded from history');
+  } else {
+    switchMode('text');
+    document.getElementById('notesInput').value = m.transcript||'';
+    updChars();
+  }
+  items = m.action_items||[];
+  renderRes(m);
+}
+
+async function delMtg(id, e) {
+  e.stopPropagation();
+  if (!confirm('Delete this meeting?')) return;
+  await db.from('meetings').delete().eq('id',id).eq('user_id',user.id);
+  toast('Deleted'); loadHistory();
+}
+
+// EXPORT
+function cpMd() {
+  if (!items.length) return;
+  const sum = document.getElementById('sumTxt').textContent;
+  const nm  = document.getElementById('mName').value||'Meeting';
+  let md = `# ${nm} — Action Items\n\n**Summary:** ${sum}\n\n## Actions\n\n`;
+  items.forEach((a,i)=>{ md+=`${i+1}. **${a.task}**\n   - Owner: ${a.owner}\n   - Deadline: ${a.deadline}\n   - Priority: ${a.priority}\n\n`; });
+  navigator.clipboard.writeText(md).then(()=>toast('Copied as markdown'));
+}
+
+function cpJSON() {
+  if (!items.length) return;
+  navigator.clipboard.writeText(JSON.stringify({action_items:items},null,2)).then(()=>toast('Copied as JSON'));
+}
+
+function clearAll() {
+  document.getElementById('notesInput').value='';
+  document.getElementById('mName').value='';
+  document.getElementById('mAtten').value='';
+  document.getElementById('resSection').style.display='none';
+  document.getElementById('chars').textContent='0 chars';
+  document.getElementById('txBox').classList.remove('on');
+  document.getElementById('pageTitle').textContent='New meeting';
+  document.querySelectorAll('.h-item').forEach(i=>i.classList.remove('active'));
+  items=[]; hideErr();
+  setStat('Click to start recording');
+  document.getElementById('recTime').textContent='0:00';
+}
+
+function newMeeting() { clearAll(); }
+
+// UTILS
+function esc(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function setLoad(on){document.getElementById('runBtn').disabled=on;document.getElementById('spinner').style.display=on?'block':'none';document.getElementById('btnTxt').textContent=on?'Processing...':'Extract actions';}
+function showErr(m){const e=document.getElementById('errBox');e.textContent=m;e.style.display='block';}
+function hideErr(){document.getElementById('errBox').style.display='none';}
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.style.display='block';clearTimeout(t._t);t._t=setTimeout(()=>t.style.display='none',2200);}
+
+document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='Enter'&&!isAudio)runExtract();});
+</script>
+</body>
+</html>
