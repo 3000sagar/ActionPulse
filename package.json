@@ -1,0 +1,27 @@
+{
+  "name": "actionpulse",
+  "version": "0.1.0",
+  "description": "Cloudflare-first meeting notes to action items app",
+  "private": true,
+  "dependencies": {
+    "chanfana": "^3.3.0",
+    "hono": "^4.12.12",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@types/node": "^25.6.0",
+    "typescript": "^6.0.3",
+    "wrangler": "^4.85.0"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "dev": "wrangler dev",
+    "preview": "wrangler dev",
+    "start": "wrangler dev",
+    "cf-typegen": "wrangler types",
+    "typecheck": "tsc --noEmit"
+  }
+}

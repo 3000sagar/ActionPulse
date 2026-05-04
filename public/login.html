@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ActionPulse — Sign in</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#FAFAF7;--surface:#F5F3EE;--surface2:#EDE9E0;--border:rgba(26,24,20,0.08);--border-hover:rgba(26,24,20,0.15);--accent:#C4813A;--accent-dim:#F0E4D0;--green:#C4813A;--green-dim:rgba(196,129,58,0.1);--amber:#C4813A;--amber-dim:rgba(196,129,58,0.1);--red:#C4813A;--red-dim:rgba(196,129,58,0.1);--text:#1A1814;--text-muted:#3D3A34;--text-dim:#7A7570;--radius:5px;--radius-sm:3px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'DM Mono',monospace;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+body::before{content:'';position:fixed;inset:0;background-image:repeating-linear-gradient(transparent, transparent 27px, var(--border) 28px);pointer-events:none;z-index:0}
+.wrap{position:relative;z-index:1;width:100%;max-width:400px;animation:fadeUp .5s ease both}
+.logo-row{display:flex;align-items:center;justify-content:center;gap:9px;margin-bottom:36px}
+.logo-icon{width:30px;height:30px;border-radius:8px;background:var(--accent);display:flex;align-items:center;justify-content:center}
+.logo-name{font-family:'Instrument Serif',serif;font-style:italic;font-size:17px;font-weight:800;letter-spacing:-.4px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.tabs{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--border)}
+.tab{padding:14px;text-align:center;font-family:'Instrument Serif',serif;font-style:italic;font-size:12px;font-weight:700;color:var(--text-muted);cursor:pointer;transition:color .2s,background .2s;border:none;background:transparent}
+.tab.active{color:var(--accent);background:var(--accent-dim)}
+.form-body{padding:28px}
+.msg{font-size:12px;padding:12px 14px;border-radius:var(--radius-sm);line-height:1.6;background:var(--green-dim);color:var(--text-muted);border:1px solid rgba(196,129,58,.2)}
+.msg strong{display:block;color:var(--text);margin-bottom:6px}
+.back-link{display:block;text-align:center;margin-top:20px;font-size:11px;color:var(--text-dim);text-decoration:none;transition:color .2s}
+.back-link:hover{color:var(--text-muted)}
+.btn-go{display:block;width:100%;margin-top:16px;padding:12px;border-radius:var(--radius-sm);background:var(--accent);color:#fff;text-align:center;text-decoration:none;font-family:'Instrument Serif',serif;font-style:italic;font-size:14px}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="logo-row">
+    <div class="logo-icon">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M3 8h7M3 12h5" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/><circle cx="13" cy="11" r="2.5" fill="#fff" opacity=".9"/></svg>
+    </div>
+    <span class="logo-name">ActionPulse</span>
+  </div>
+
+  <div class="card">
+    <div class="tabs">
+      <button class="tab active">Sign in</button>
+      <button class="tab">Create account</button>
+    </div>
+    <div class="form-body">
+      <div class="msg">
+        <strong>Future plan preview</strong>
+        This page has been visually restored to the original ActionPulse style, but authentication is still not active in the current backend.
+      </div>
+      <a class="btn-go" href="/app">Open the live app instead</a>
+    </div>
+  </div>
+  <a class="back-link" href="/">← Back to home</a>
+</div>
+</body>
+</html>
