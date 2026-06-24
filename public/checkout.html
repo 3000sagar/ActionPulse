@@ -4,70 +4,155 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ActionPulse — Checkout</title>
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <style>
-:root{--bg:#FAFAF7;--surface:#F5F3EE;--surface2:#EDE9E0;--border:rgba(26,24,20,0.08);--border-hover:rgba(26,24,20,0.15);--accent:#C4813A;--accent-dim:#F0E4D0;--green:#C4813A;--green-dim:rgba(196,129,58,0.1);--amber:#C4813A;--red:#C4813A;--text:#1A1814;--text-muted:#3D3A34;--text-dim:#7A7570;--radius:5px;--radius-sm:3px}
+:root{--bg:#FAFAF7;--surface:#F5F3EE;--surface2:#EDE9E0;--border:rgba(26,24,20,0.08);--border-hover:rgba(26,24,20,0.15);--accent:#C4813A;--accent-dim:#F0E4D0;--green:#537853;--green-dim:rgba(83,120,83,0.1);--red:#A64B42;--red-dim:rgba(166,75,66,0.1);--text:#1A1814;--text-muted:#3D3A34;--text-dim:#7A7570;--radius:5px;--radius-sm:3px}
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--bg);color:var(--text);font-family:'DM Mono',monospace;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
-body::before{content:'';position:fixed;inset:0;background-image:repeating-linear-gradient(transparent, transparent 27px, var(--border) 28px);pointer-events:none;z-index:0}
+body::before{content:'';position:fixed;inset:0;background-image:repeating-linear-gradient(transparent,transparent 27px,var(--border) 28px);pointer-events:none;z-index:0}
 .checkout-wrap{position:relative;z-index:1;width:100%;max-width:460px;animation:fadeUp .5s ease both}
 .logo-row{display:flex;align-items:center;gap:9px;margin-bottom:32px;justify-content:center}
 .logo-icon{width:28px;height:28px;border-radius:7px;background:var(--accent);display:flex;align-items:center;justify-content:center}
-.logo-name{font-family:'Instrument Serif',serif;font-style:italic;font-size:18px;font-weight:800;color:var(--text);letter-spacing:-.4px}
+.logo-name{font-family:'Instrument Serif',serif;font-style:italic;font-size:18px;font-weight:800;letter-spacing:-.4px}
 .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
 .card-top{padding:28px 28px 24px;border-bottom:1px solid var(--border)}
 .plan-switcher{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:24px}
-.plan-tab{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;text-align:center}
+.plan-tab{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;text-align:center;cursor:pointer;transition:all .2s}
 .plan-tab.active{background:var(--accent-dim);border-color:var(--accent)}
 .plan-tab-name{font-family:'Instrument Serif',serif;font-style:italic;font-size:15px;font-weight:700;color:var(--text);margin-bottom:3px}
 .plan-tab-price{font-size:11px;color:var(--text-muted)}
 .order-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;font-size:13px;color:var(--text-muted)}
 .order-row.total{font-family:'Instrument Serif',serif;font-style:italic;font-weight:700;color:var(--text);font-size:17px;border-top:1px solid var(--border);padding-top:14px;margin-top:6px}
 .card-body{padding:24px 28px}
-.msg{font-size:12px;padding:12px 14px;border-radius:var(--radius-sm);line-height:1.6;background:var(--green-dim);color:var(--text-muted);border:1px solid rgba(196,129,58,.2)}
-.msg strong{display:block;color:var(--text);margin-bottom:6px}
-.btn-go{display:block;width:100%;margin-top:16px;padding:14px;border-radius:var(--radius-sm);background:var(--accent);color:#fff;text-align:center;text-decoration:none;font-family:'Instrument Serif',serif;font-style:italic;font-size:16px}
-.back-link{display:block;text-align:center;margin-top:20px;font-size:12px;color:var(--text-dim);text-decoration:none;transition:color .2s}
+label{display:block;font-size:11px;letter-spacing:.06em;color:var(--text-dim);text-transform:uppercase;margin-bottom:6px;margin-top:14px}
+label:first-child{margin-top:0}
+input[type="email"],input[type="text"]{width:100%;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);font-family:'DM Mono',monospace;font-size:13px;color:var(--text);outline:none}
+input:focus{border-color:var(--accent)}
+.btn-pay{display:block;width:100%;margin-top:20px;padding:14px;border:none;border-radius:var(--radius-sm);background:var(--accent);color:#fff;font-family:'Instrument Serif',serif;font-style:italic;font-size:16px;font-weight:700;cursor:pointer;transition:opacity .2s}
+.btn-pay:hover{opacity:.88}
+.btn-pay:disabled{opacity:.4;cursor:not-allowed}
+.err-msg{display:none;margin-top:14px;padding:10px 12px;background:var(--red-dim);border:1px solid rgba(166,75,66,.2);border-radius:var(--radius-sm);font-size:12px;color:var(--red)}
+.ok-msg{display:none;margin-top:14px;padding:10px 12px;background:var(--green-dim);border:1px solid rgba(83,120,83,.2);border-radius:var(--radius-sm);font-size:12px;color:var(--green)}
+.back-link{display:block;text-align:center;margin-top:20px;font-size:12px;color:var(--text-dim);text-decoration:none}
 .back-link:hover{color:var(--text-muted)}
+.spinner{width:13px;height:13px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:none;margin:0 auto}
 @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes spin{to{transform:rotate(360deg)}}
 </style>
 </head>
 <body>
 <div class="checkout-wrap">
   <div class="logo-row">
-    <div class="logo-icon">
-      <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M3 8h7M3 12h5" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/><circle cx="13" cy="11" r="2.5" fill="#fff" opacity=".9"/><path d="M12.3 11l.5.5.9-.9" stroke="#7c6bff" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    </div>
+    <div class="logo-icon"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M3 8h7M3 12h5" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/><circle cx="13" cy="11" r="2.5" fill="#fff" opacity=".9"/></svg></div>
     <span class="logo-name">ActionPulse</span>
   </div>
 
   <div class="card">
     <div class="card-top">
       <div class="plan-switcher">
-        <div class="plan-tab active">
+        <div class="plan-tab active" id="ptPro" onclick="setPlan('pro')">
           <div class="plan-tab-name">Pro</div>
           <div class="plan-tab-price">₹799 / month</div>
         </div>
-        <div class="plan-tab">
+        <div class="plan-tab" id="ptTeam" onclick="setPlan('team')">
           <div class="plan-tab-name">Team</div>
           <div class="plan-tab-price">₹2,499 / month</div>
         </div>
       </div>
-      <div class="order-row"><span>Plan</span><span>Future billing</span></div>
-      <div class="order-row"><span>Billing</span><span>Paused</span></div>
-      <div class="order-row"><span>Status</span><span>Preview only</span></div>
-      <div class="order-row total"><span>Total today</span><span>—</span></div>
+      <div class="order-row"><span>Plan</span><span id="summaryPlan">Pro</span></div>
+      <div class="order-row"><span>GST (18%)</span><span id="summaryGst">₹144</span></div>
+      <div class="order-row total"><span>Total</span><span id="summaryTotal">₹943</span></div>
     </div>
     <div class="card-body">
-      <div class="msg">
-        <strong>Future plan preview</strong>
-        The original checkout design is back, but the real payment gateway has not been restored yet. This page is visual only for now.
-      </div>
-      <a class="btn-go" href="/app">Use the live app instead</a>
+      <label for="payName">Full name</label>
+      <input type="text" id="payName" placeholder="Your name" required>
+      <label for="payEmail">Email</label>
+      <input type="email" id="payEmail" placeholder="you@company.com" required>
+      <button class="btn-pay" id="payBtn" onclick="startPayment()">
+        <span id="payBtnText">Pay ₹943 with Razorpay</span>
+        <div class="spinner" id="paySpinner"></div>
+      </button>
+      <div class="err-msg" id="errMsg"></div>
+      <div class="ok-msg" id="okMsg"></div>
     </div>
   </div>
-
   <a class="back-link" href="/#pricing">← Back to pricing</a>
 </div>
+
+<script>
+const PLANS = { pro: { name: 'Pro', base: 799 }, team: { name: 'Team', base: 2499 } };
+let currentPlan = 'pro';
+
+function setPlan(p) {
+  currentPlan = p;
+  document.getElementById('ptPro').classList.toggle('active', p === 'pro');
+  document.getElementById('ptTeam').classList.toggle('active', p === 'team');
+  updateSummary();
+}
+
+function updateSummary() {
+  const { name, base } = PLANS[currentPlan];
+  const gst = Math.round(base * 0.18);
+  const total = base + gst;
+  document.getElementById('summaryPlan').textContent = name;
+  document.getElementById('summaryGst').textContent = '₹' + gst.toLocaleString('en-IN');
+  document.getElementById('summaryTotal').textContent = '₹' + total.toLocaleString('en-IN');
+  document.getElementById('payBtnText').textContent = 'Pay ₹' + total.toLocaleString('en-IN') + ' with Razorpay';
+}
+
+async function startPayment() {
+  const name  = document.getElementById('payName').value.trim();
+  const email = document.getElementById('payEmail').value.trim();
+  if (!name || !email) { showErr('Please fill in your name and email.'); return; }
+  hideMsg(); setLoading(true);
+
+  try {
+    const r = await fetch('/api/create-order', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ plan: currentPlan, name, email })
+    });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.error || 'Failed to create order');
+
+    const options = {
+      key: d.key_id,
+      amount: d.amount,
+      currency: 'INR',
+      name: 'ActionPulse',
+      description: PLANS[currentPlan].name + ' Plan',
+      order_id: d.razorpay_order_id,
+      prefill: { name, email },
+      theme: { color: '#C4813A' },
+      handler: async function(response) {
+        setLoading(true);
+        try {
+          const v = await fetch('/api/verify-payment', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ...response, plan: currentPlan, name, email })
+          });
+          const vd = await v.json();
+          if (!v.ok) throw new Error(vd.error || 'Verification failed');
+          showOk('Payment successful! ' + vd.message);
+        } catch (e) { showErr(e.message); }
+        finally { setLoading(false); }
+      }
+    };
+    new Razorpay(options).open();
+  } catch (e) { showErr(e.message); }
+  finally { setLoading(false); }
+}
+
+function setLoading(on) {
+  document.getElementById('payBtn').disabled = on;
+  document.getElementById('paySpinner').style.display = on ? 'inline-block' : 'none';
+  document.getElementById('payBtnText').style.display = on ? 'none' : 'inline';
+}
+function showErr(m) { const el = document.getElementById('errMsg'); el.textContent = m; el.style.display = 'block'; }
+function showOk(m)  { const el = document.getElementById('okMsg');  el.textContent = m; el.style.display = 'block'; }
+function hideMsg()   { document.getElementById('errMsg').style.display = 'none'; document.getElementById('okMsg').style.display = 'none'; }
+</script>
 </body>
 </html>

@@ -1,42 +1,39 @@
 export default async function handler(req, res) {
-  // Only allow POST
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
+  // ── 1. Auth ──
   const authHeader = req.headers.authorization;
   if (!authHeader) return res.status(401).json({ error: 'Unauthorized: Missing token' });
 
   const token = authHeader.split(' ')[1];
-  const supabaseUrl = process.env.SUPABASE_URL;
-  const supabaseAnon = process.env.SUPABASE_ANON_KEY;
+  const SUPABASE_URL  = process.env.SUPABASE_URL;
+  const SUPABASE_ANON = process.env.SUPABASE_ANON_KEY;
+  const GROQ_KEY      = process.env.GROQ_API_KEY;
 
-  if (!supabaseUrl || !supabaseAnon) {
+  if (!SUPABASE_URL || !SUPABASE_ANON) {
     return res.status(500).json({ error: 'Server misconfigured: Supabase variables missing' });
   }
+  if (!GROQ_KEY) {
+    return res.status(500).json({ error: 'Server misconfigured: AI key missing' });
+  }
 
+  let user;
   try {
-    const authRes = await fetch(`${supabaseUrl}/auth/v1/user`, {
-      headers: { 'Authorization': `Bearer ${token}`, 'apikey': supabaseAnon }
+    const authRes = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+      headers: { Authorization: `Bearer ${token}`, apikey: SUPABASE_ANON }
     });
     if (!authRes.ok) return res.status(401).json({ error: 'Unauthorized: Invalid token' });
-  } catch(e) {
+    user = await authRes.json();
+  } catch {
     return res.status(500).json({ error: 'Auth validation failed' });
   }
 
-
-  const { notes, meetingName, attendees } = req.body;
-
+  // ── 2. Input ──
+  const { notes, meetingName, attendees } = req.body || {};
   if (!notes || notes.trim().length < 10) {
-    return res.status(400).json({ error: 'Please provide meeting notes.' });
-  }
-
-  // YOUR API KEY LIVES HERE — in Vercel environment variables
-  // User never sees this. Ever.
-  const GEMINI_KEY = process.env.GEMINI_API_KEY;
-
-  if (!GEMINI_KEY) {
-    return res.status(500).json({ error: 'Server misconfigured. Contact support.' });
+    return res.status(400).json({ error: 'Please provide meeting notes (at least 10 characters).' });
   }
 
   const context = [
@@ -44,55 +41,107 @@ export default async function handler(req, res) {
     attendees   ? `Attendees: ${attendees}` : ''
   ].filter(Boolean).join('\n');
 
-  const prompt = `You are an expert meeting assistant. Extract all action items from these meeting notes and return ONLY a valid JSON object — no markdown, no backticks, no explanation.
+  const safeName = meetingName?.trim() || 'Untitled Meeting';
+
+  // ── 3. Prompt ──
+  const prompt = `You are an expert meeting assistant and execution strategist.
+Extract ALL action items from the meeting notes below and return ONLY valid JSON — no markdown, no backticks, no explanation.
 
 ${context ? context + '\n\n' : ''}Meeting Notes:
 ${notes}
 
-Return this exact JSON shape:
+Return this exact JSON structure:
 {
-  "summary": "2-3 sentence summary of the meeting",
+  "summary": "2-3 sentence executive summary of the meeting",
   "action_items": [
     {
-      "task": "Clear description of what needs to be done (start with a verb)",
+      "task": "Clear action starting with a verb",
       "owner": "Person responsible or 'Unassigned'",
-      "deadline": "Specific date or relative (Friday, End of month) or 'Not specified'",
+      "deadline": "Specific date, relative date, or 'Not specified'",
       "priority": "high | medium | low",
-      "ai_prompt": "A ready-to-use prompt that the user can copy and paste into an AI to accomplish this exact task (e.g., 'Write a professional email...'). Provide full context from the meeting.",
-      "ai_platform": "The best AI platform for this specific task (e.g., 'Claude', 'ChatGPT', 'Perplexity', 'Midjourney')"
+      "category": "engineering | design | marketing | product | operations | research | other",
+      "impact": "Why this task matters in one sentence",
+      "steps": ["Step 1", "Step 2", "Step 3"],
+      "ai_prompt": "A complete, copy-paste-ready AI prompt to accomplish this task. Include role, context, goal, constraints, and expected output format.",
+      "ai_platform": "Best AI tool for this task (e.g. Claude, ChatGPT, Perplexity, Midjourney, GitHub Copilot)"
     }
   ]
 }
 
 Rules: Extract EVERY action item. Start tasks with a verb. Return ONLY valid JSON.`;
 
+  // ── 4. Groq call ──
+  let parsed;
   try {
-    const geminiRes = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { temperature: 0.2, maxOutputTokens: 2048 }
-        })
-      }
-    );
+    const aiRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${GROQ_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile',
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.2,
+        max_tokens: 3000
+      })
+    });
 
-    if (!geminiRes.ok) {
-      const err = await geminiRes.json();
-      throw new Error(err.error?.message || 'Gemini API error');
+    if (!aiRes.ok) {
+      const err = await aiRes.text();
+      throw new Error('Groq API error: ' + err);
     }
 
-    const data = await geminiRes.json();
-    let raw = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    const data = await aiRes.json();
+    let raw = data.choices?.[0]?.message?.content || '';
     raw = raw.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
 
-    const parsed = JSON.parse(raw);
-    return res.status(200).json(parsed);
+    const start = raw.indexOf('{');
+    const end   = raw.lastIndexOf('}');
+    if (start === -1 || end === -1) throw new Error('AI returned invalid format');
 
+    parsed = JSON.parse(raw.slice(start, end + 1));
   } catch (e) {
     console.error('Extract error:', e.message);
     return res.status(500).json({ error: 'Failed to process notes. Please try again.' });
   }
+
+  // ── 5. Normalize ──
+  if (!Array.isArray(parsed.action_items)) parsed.action_items = [];
+  parsed.action_items = parsed.action_items.map(item => ({
+    task:        item.task        || 'Undefined task',
+    owner:       item.owner       || 'Unassigned',
+    deadline:    item.deadline    || 'Not specified',
+    priority:    ['high','medium','low'].includes(item.priority) ? item.priority : 'medium',
+    category:    item.category    || 'other',
+    impact:      item.impact      || '',
+    steps:       Array.isArray(item.steps) ? item.steps : [],
+    ai_prompt:   item.ai_prompt   || '',
+    ai_platform: item.ai_platform || 'ChatGPT'
+  }));
+
+  // ── 6. Save to Supabase ──
+  try {
+    await fetch(`${SUPABASE_URL}/rest/v1/meetings`, {
+      method: 'POST',
+      headers: {
+        apikey: SUPABASE_ANON,
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+        Prefer: 'return=minimal'
+      },
+      body: JSON.stringify({
+        user_id:      user.id,
+        meeting_name: safeName,
+        source:       'text',
+        summary:      parsed.summary,
+        action_items: parsed.action_items
+      })
+    });
+  } catch (err) {
+    console.error('DB save error:', err.message);
+    // Don't block response if save fails
+  }
+
+  return res.status(200).json(parsed);
 }

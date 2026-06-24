@@ -1,6 +1,7 @@
 import { OpenAPIRoute } from "chanfana";
 import { z } from "zod";
-import { type AppContext } from "../types";
+import type { Context } from "hono";
+import { type AppEnv } from "../types";
 
 type RawActionItem = {
 	task?: string;
@@ -26,7 +27,8 @@ export class Extract extends OpenAPIRoute {
 				content: {
 					"application/json": {
 						schema: z.object({
-							notes: z.string().min(10),
+							notes: z.string().optional(),
+							imageBase64: z.string().optional(),
 							meetingName: z.string().optional(),
 							attendees: z.string().optional(),
 						}),
@@ -66,21 +68,22 @@ export class Extract extends OpenAPIRoute {
 		},
 	};
 
-	async handle(c: AppContext) {
+	async handle(c: Context<AppEnv>) {
 		const groqKey = c.env.GROQ_API_KEY;
 
 		if (!groqKey) {
 			return c.json({ error: "Server misconfigured (GROQ_API_KEY missing)" }, 500);
 		}
 
-		const { notes, meetingName, attendees } = await c.req.json<{
-			notes: string;
+		const { notes, imageBase64, meetingName, attendees } = await c.req.json<{
+			notes?: string;
+			imageBase64?: string;
 			meetingName?: string;
 			attendees?: string;
 		}>();
 
-		if (!notes || notes.trim().length < 10) {
-			return c.json({ error: "Meeting notes too short" }, 400);
+		if ((!notes || notes.trim().length < 10) && !imageBase64) {
+			return c.json({ error: "Please provide meeting notes or an image" }, 400);
 		}
 
 		const safeMeetingName = meetingName?.trim() || "Untitled Meeting";
@@ -89,12 +92,24 @@ export class Extract extends OpenAPIRoute {
 			.join("\n");
 
 		const prompt = buildPrompt({
-			notes,
+			notes: notes || "[Notes provided via image]",
 			meetingName: safeMeetingName,
 			context,
 		});
 
 		try {
+			const model = imageBase64 ? "llama-3.2-90b-vision-preview" : "llama-3.3-70b-versatile";
+			
+			let messageContent: any = prompt;
+			if (imageBase64) {
+				// Ensure base64 string has the correct data URI prefix if it's missing
+				const base64Data = imageBase64.startsWith("data:image") ? imageBase64 : `data:image/jpeg;base64,${imageBase64}`;
+				messageContent = [
+					{ type: "text", text: prompt },
+					{ type: "image_url", image_url: { url: base64Data } }
+				];
+			}
+
 			const aiResponse = await fetch("https://api.groq.com/openai/v1/chat/completions", {
 				method: "POST",
 				headers: {
@@ -102,8 +117,8 @@ export class Extract extends OpenAPIRoute {
 					"Content-Type": "application/json",
 				},
 				body: JSON.stringify({
-					model: "llama-3.1-8b-instant",
-					messages: [{ role: "user", content: prompt }],
+					model: model,
+					messages: [{ role: "user", content: messageContent }],
 					temperature: 0.2,
 				}),
 			});
@@ -136,14 +151,38 @@ export class Extract extends OpenAPIRoute {
 				action_items?: RawActionItem[];
 			};
 
+			const summary = typeof parsed.summary === "string" && parsed.summary.trim()
+				? parsed.summary
+				: "Summary unavailable.";
+			const actionItems = Array.isArray(parsed.action_items)
+				? parsed.action_items.map(normalizeActionItem)
+				: [];
+
+			// Save to D1 meetings table
+			try {
+				const user = c.get("user");
+				if (user) {
+					const meetingId = crypto.randomUUID();
+					await c.env.DB.prepare(
+						"INSERT INTO meetings (id, user_id, meeting_name, source, transcript, summary, action_items) VALUES (?, ?, ?, ?, ?, ?, ?)"
+					).bind(
+						meetingId,
+						user.id,
+						safeMeetingName,
+						imageBase64 ? "image" : "text",
+						notes || null,
+						summary,
+						JSON.stringify(actionItems)
+					).run();
+				}
+			} catch (dbErr) {
+				console.error("Failed to save meeting:", (dbErr as Error).message);
+				// Don't fail the request if DB save fails
+			}
+
 			return c.json({
-				summary:
-					typeof parsed.summary === "string" && parsed.summary.trim()
-						? parsed.summary
-						: "Summary unavailable.",
-				action_items: Array.isArray(parsed.action_items)
-					? parsed.action_items.map(normalizeActionItem)
-					: [],
+				summary,
+				action_items: actionItems,
 			});
 		} catch (error) {
 			console.error("AI ERROR:", (error as Error).message);

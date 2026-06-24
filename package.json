@@ -1,7 +1,7 @@
 {
   "name": "actionpulse",
-  "version": "0.1.0",
-  "description": "Cloudflare-first meeting notes to action items app",
+  "version": "1.0.0",
+  "description": "AI-powered meeting notes to structured action items",
   "private": true,
   "dependencies": {
     "chanfana": "^3.3.0",

@@ -33,6 +33,13 @@
 	 */
 	// "vars": {  "MY_VARIABLE": "production_value" }
 	"assets": { "directory": "./public/", "binding": "ASSETS" },
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "actionpulse-db",
+			"database_id": "local"
+		}
+	],
 	/**
 	 * Service Bindings (communicate between multiple Workers)
 	 * https://developers.cloudflare.com/workers/wrangler/configuration/#service-bindings

@@ -4,233 +4,279 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ActionPulse — App</title>
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@300;400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
 <style>
-:root{--bg:#FAFAF7;--surface:#F5F3EE;--surface2:#EDE9E0;--border:rgba(26,24,20,0.08);--border-hover:rgba(26,24,20,0.15);--accent:#C4813A;--accent-dim:#F0E4D0;--green:#537853;--green-dim:rgba(83,120,83,0.1);--amber:#C4813A;--amber-dim:rgba(196,129,58,0.1);--red:#A64B42;--red-dim:rgba(166,75,66,0.1);--text:#1A1814;--text-muted:#3D3A34;--text-dim:#7A7570;--radius:5px;--radius-sm:3px;--sidebar:290px}
-*{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--bg);color:var(--text);font-family:'DM Mono',monospace;min-height:100vh;overflow-x:hidden}
-body::before{content:'';position:fixed;inset:0;background-image:repeating-linear-gradient(transparent, transparent 27px, var(--border) 28px);pointer-events:none;z-index:0}
-.layout{display:flex;min-height:100vh;position:relative;z-index:1}
-.sidebar{width:var(--sidebar);flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:20;transition:transform .3s}
-.sidebar-head{padding:14px 14px 12px;border-bottom:1px solid var(--border)}
-.s-logo{display:flex;align-items:center;gap:8px;margin-bottom:12px}
-.logo-icon{width:26px;height:26px;border-radius:6px;background:var(--accent);display:flex;align-items:center;justify-content:center}
-.logo-name{font-family:'Instrument Serif',serif;font-style:italic;font-size:14px;font-weight:800;letter-spacing:-.3px}
-.user-row{display:flex;align-items:center;gap:8px}
-.u-avatar{width:26px;height:26px;border-radius:50%;background:var(--accent-dim);display:flex;align-items:center;justify-content:center;font-family:'Instrument Serif',serif;font-style:italic;font-size:10px;font-weight:700;color:var(--accent);flex-shrink:0;border:1px solid rgba(124,107,255,.25)}
-.u-email{font-size:11px;color:var(--text-muted);flex:1;min-width:0}
-.btn-so{background:transparent;border:none;cursor:pointer;color:var(--text-dim);font-size:10px;padding:3px 5px;border-radius:4px;white-space:nowrap;transition:color .15s;font-family:'DM Mono',monospace;text-decoration:none}
-.btn-so:hover{color:var(--red)}
-.s-section{font-size:10px;letter-spacing:.08em;color:var(--text-dim);text-transform:uppercase;padding:12px 14px 7px;display:flex;align-items:center;justify-content:space-between}
-.h-count{background:var(--surface2);border-radius:8px;padding:1px 6px;font-size:10px;color:var(--text-muted)}
-.h-list{flex:1;overflow-y:auto;padding:0 6px 12px}
-.h-list::-webkit-scrollbar{width:3px}
-.h-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
-.h-item{border-radius:var(--radius-sm);padding:9px 9px;transition:background .15s;margin-bottom:3px;position:relative;display:flex;align-items:flex-start;gap:8px}
-.h-item:hover{background:var(--surface2)}
-.h-item.active{background:var(--accent-dim);border:1px solid rgba(124,107,255,.2)}
-.h-ico{width:22px;height:22px;border-radius:5px;background:var(--surface2);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--text-muted)}
-.h-ico svg{width:11px;height:11px}
-.h-body{flex:1;min-width:0}
-.h-name{font-family:'Instrument Serif',serif;font-style:italic;font-size:11px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:3px}
-.h-meta{font-size:10px;color:var(--text-dim);display:flex;gap:6px;align-items:center;flex-wrap:wrap}
-.h-src{font-size:9px;padding:1px 5px;border-radius:6px}
-.h-src-audio{background:rgba(124,107,255,.15);color:var(--accent)}
-.h-src-text{background:var(--surface2);color:var(--text-dim)}
-.h-empty{padding:20px 10px;text-align:center;font-size:11px;color:var(--text-dim);line-height:1.65}
-.main{margin-left:var(--sidebar);flex:1;padding:28px 28px 80px;max-width:calc(100vw - var(--sidebar))}
-.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px}
-.t-title{font-family:'Instrument Serif',serif;font-style:italic;font-size:18px;font-weight:800;letter-spacing:-.5px}
-.t-right{display:flex;gap:7px}
-.btn-sm{background:transparent;border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-muted);padding:6px 11px;cursor:pointer;font-size:11px;display:flex;align-items:center;gap:5px;transition:border-color .2s,color .2s;font-family:'DM Mono',monospace;text-decoration:none}
-.btn-sm:hover{border-color:var(--border-hover);color:var(--text)}
-.btn-sm svg{width:12px;height:12px}
-.inp-tabs{display:flex;gap:4px;margin-bottom:10px}
-.inp-tab{background:transparent;border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-muted);padding:6px 12px;cursor:pointer;font-size:11px;font-family:'DM Mono',monospace;transition:all .2s;display:flex;align-items:center;gap:6px}
-.inp-tab:hover{border-color:var(--border-hover);color:var(--text)}
-.inp-tab.active{background:var(--accent-dim);border-color:rgba(196,129,58,0.4);color:var(--accent)}
-.inp-tab svg{width:12px;height:12px}
-.audio-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:14px;text-align:center;display:none}
-.audio-card.on{display:block}
-.a-title{font-family:'Instrument Serif',serif;font-style:italic;font-size:13px;font-weight:700;margin-bottom:5px}
-.a-sub{font-size:12px;color:var(--text-muted);margin-bottom:20px;line-height:1.55}
-.rec-btn{width:58px;height:58px;border-radius:50%;border:none;cursor:pointer;background:var(--red);display:flex;align-items:center;justify-content:center;margin:0 auto;transition:transform .15s}
-.rec-btn:hover{transform:scale(1.06)}
-.rec-btn svg{width:20px;height:20px}
-.rec-time{font-family:'Instrument Serif',serif;font-style:italic;font-size:26px;font-weight:800;letter-spacing:.05em;margin:14px 0 4px}
-.rec-stat{font-size:11px;color:var(--text-muted);min-height:14px}
-.main-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:14px}
-.c-head{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
-.c-title{font-family:'Instrument Serif',serif;font-style:italic;font-size:12px;font-weight:700}
-.c-chars{font-size:11px;color:var(--text-dim)}
-textarea{background:var(--surface);border:none;resize:none;min-height:180px;padding:16px;font-size:13px;line-height:1.7;color:var(--text);font-family:'DM Mono',monospace;width:100%;outline:none}
-textarea::placeholder{color:var(--text-dim)}
-.c-foot{padding:11px 16px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:9px;flex-wrap:wrap}
-.ctx-row{display:flex;gap:7px;flex:1;flex-wrap:wrap}
-.ctx-inp{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:'DM Mono',monospace;font-size:12px;padding:7px 10px;width:145px;outline:none;transition:border-color .2s}
-.ctx-inp:focus{border-color:var(--accent)}
-.ctx-inp::placeholder{color:var(--text-dim)}
-.btn-run{background:var(--accent);border:none;border-radius:var(--radius-sm);color:#fff;font-family:'Instrument Serif',serif;font-style:italic;font-size:12px;font-weight:700;padding:9px 20px;cursor:pointer;transition:opacity .2s,transform .1s;display:flex;align-items:center;gap:7px}
-.btn-run:hover{opacity:.88}
-.btn-run:active{transform:scale(.97)}
-.btn-run:disabled{opacity:.4;cursor:not-allowed}
-.spinner{width:13px;height:13px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:none}
-.res-section{animation:fadeUp .5s ease both}
-.res-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
-.res-lbl{font-family:'Instrument Serif',serif;font-style:italic;font-size:11px;font-weight:700;color:var(--text-muted);letter-spacing:.06em;text-transform:uppercase}
-.res-meta{font-size:11px;color:var(--text-dim)}
-.sum-box{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:var(--radius);padding:13px 16px;margin-bottom:10px;font-size:13px;color:var(--text-muted);line-height:1.65}
-.sum-lbl{font-size:9px;letter-spacing:.1em;color:var(--accent);text-transform:uppercase;margin-bottom:5px}
-.a-grid{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
-.a-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:13px 15px;display:flex;gap:11px;align-items:flex-start;transition:border-color .2s;animation:fadeUp .4s ease both}
-.a-card:hover{border-color:var(--border-hover)}
-.p-badge{font-size:9px;font-weight:500;padding:2px 7px;border-radius:20px;white-space:nowrap;flex-shrink:0;margin-top:2px;letter-spacing:.04em;text-transform:uppercase}
-.p-high{background:var(--red-dim);color:var(--red);border:1px solid rgba(255,95,109,.2)}
-.p-medium{background:var(--amber-dim);color:var(--amber);border:1px solid rgba(255,181,71,.2)}
-.p-low{background:var(--green-dim);color:var(--green);border:1px solid rgba(0,229,160,.2)}
-.a-body{flex:1;min-width:0}
-.a-task{font-size:13px;font-family:'Instrument Serif',serif;font-style:italic;font-weight:600;color:var(--text);margin-bottom:5px;line-height:1.35}
-.a-meta{display:flex;gap:12px;flex-wrap:wrap}
-.m-chip{font-size:11px;color:var(--text-muted);display:flex;align-items:center;gap:4px}
-.m-chip svg{width:10px;height:10px;opacity:.6}
-.a-prompt{display:none;margin-top:10px;padding:10px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:11px;color:var(--text-muted);line-height:1.5;font-family:'DM Mono',monospace}
-.a-prompt strong{color:var(--text);font-family:'Instrument Serif',serif;font-style:italic;font-weight:600;margin-bottom:3px;display:block}
-.a-card:hover .a-prompt{display:block}
-.exp-bar{display:flex;gap:7px;flex-wrap:wrap}
-.btn-exp{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-muted);font-family:'DM Mono',monospace;font-size:11px;padding:7px 11px;cursor:pointer;transition:border-color .2s,color .2s;display:flex;align-items:center;gap:5px}
-.btn-exp:hover{border-color:var(--border-hover);color:var(--text)}
-.btn-exp:disabled{opacity:.45;cursor:not-allowed}
-.btn-exp svg{width:11px;height:11px}
-.err-box{background:var(--red-dim);border:1px solid rgba(255,95,109,.25);border-radius:var(--radius);padding:11px 15px;font-size:13px;color:var(--red);margin-bottom:12px;display:none}
-.note-box{background:var(--surface);border:1px dashed var(--border-hover);border-radius:var(--radius);padding:12px 14px;font-size:12px;color:var(--text-muted);line-height:1.65;margin-bottom:14px}
-.toast{position:fixed;bottom:18px;right:18px;background:var(--surface2);border:1px solid var(--border-hover);border-radius:var(--radius-sm);padding:9px 15px;font-size:12px;color:var(--text);z-index:100;display:none}
-.s-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:19;backdrop-filter:blur(2px)}
-.btn-menu{display:none;background:transparent;border:1px solid var(--border);border-radius:var(--radius-sm);padding:6px;cursor:pointer;color:var(--text-muted)}
-.btn-menu svg{width:15px;height:15px;display:block}
-@media(max-width:768px){.sidebar{transform:translateX(-100%)}.sidebar.open{transform:translateX(0)}.s-overlay.open{display:block}.main{margin-left:0;max-width:100%;padding:18px 14px 60px}.btn-menu{display:flex;align-items:center}.ctx-row{flex-direction:column}.ctx-inp{width:100%}.btn-run{justify-content:center;width:100%}.c-foot{flex-direction:column;align-items:stretch}}
-@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
-@keyframes spin{to{transform:rotate(360deg)}}
+:root {
+  --bg: #F9F9F6;
+  --surface: #FFFFFF;
+  --surface2: #F2F2EC;
+  --border: rgba(26,24,20,0.08);
+  --border-hover: rgba(26,24,20,0.15);
+  --accent: #C4813A;
+  --accent-dim: #F0E4D0;
+  --green: #537853;
+  --green-dim: rgba(83,120,83,0.1);
+  --amber: #C4813A;
+  --amber-dim: rgba(196,129,58,0.1);
+  --red: #A64B42;
+  --red-dim: rgba(166,75,66,0.1);
+  --text: #1A1814;
+  --text-muted: #4A463F;
+  --text-dim: #8A857D;
+  --radius: 8px;
+  --radius-sm: 4px;
+  --sidebar: 300px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; min-height: 100vh; overflow-x: hidden;
+}
+body::before {
+  content:''; position:fixed; inset:0; background-image:radial-gradient(var(--border) 1px, transparent 1px); background-size:24px 24px; pointer-events:none; z-index:0; opacity: 0.5;
+}
+.layout { display: flex; min-height: 100vh; position: relative; z-index: 1; }
+/* Sidebar */
+.sidebar {
+  width: var(--sidebar); flex-shrink: 0; background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; height: 100vh; z-index: 20; transition: transform .3s cubic-bezier(0.16, 1, 0.3, 1); box-shadow: 4px 0 24px rgba(0,0,0,0.02);
+}
+.sidebar-head { padding: 20px; border-bottom: 1px solid var(--border); }
+.s-logo { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+.logo-icon { width: 28px; height: 28px; border-radius: 6px; background: var(--accent); display: flex; align-items: center; justify-content: center; }
+.logo-name { font-family: 'Instrument Serif', serif; font-style: italic; font-size: 18px; font-weight: 800; letter-spacing: -0.3px; }
+.user-row { display: flex; align-items: center; gap: 10px; }
+.u-avatar { width: 30px; height: 30px; border-radius: 50%; background: var(--accent-dim); display: flex; align-items: center; justify-content: center; font-family: 'Instrument Serif', serif; font-style: italic; font-size: 14px; font-weight: 700; color: var(--accent); flex-shrink: 0; }
+.u-email { font-size: 12px; color: var(--text-muted); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: 'DM Mono', monospace; }
+.btn-so { background: transparent; border: none; cursor: pointer; color: var(--text-dim); font-size: 11px; padding: 4px 6px; border-radius: 4px; white-space: nowrap; transition: color .2s, background .2s; font-family: 'DM Mono', monospace; }
+.btn-so:hover { color: var(--red); background: var(--red-dim); }
+.s-section { font-size: 11px; letter-spacing: 0.08em; color: var(--text-dim); text-transform: uppercase; padding: 20px 20px 10px; display: flex; align-items: center; justify-content: space-between; font-weight: 600; }
+.h-count { background: var(--surface2); border-radius: 12px; padding: 2px 8px; font-size: 10px; color: var(--text-muted); }
+.h-list { flex: 1; overflow-y: auto; padding: 0 12px 20px; }
+.h-list::-webkit-scrollbar { width: 4px; }
+.h-list::-webkit-scrollbar-thumb { background: var(--border-hover); border-radius: 2px; }
+.h-item { border-radius: var(--radius); padding: 12px; transition: all .2s; margin-bottom: 4px; cursor: pointer; display: flex; align-items: flex-start; gap: 10px; }
+.h-item:hover { background: var(--surface2); transform: translateX(2px); }
+.h-item.active { background: var(--accent-dim); border: 1px solid rgba(196,129,58,0.2); }
+.h-ico { width: 24px; height: 24px; border-radius: 6px; background: var(--surface); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: var(--text-muted); }
+.h-ico svg { width: 12px; height: 12px; }
+.h-body { flex: 1; min-width: 0; }
+.h-name { font-size: 13px; font-weight: 500; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-bottom: 4px; }
+.h-meta { font-size: 11px; color: var(--text-dim); font-family: 'DM Mono', monospace; }
+.h-empty { padding: 30px 10px; text-align: center; font-size: 12px; color: var(--text-dim); line-height: 1.6; }
+
+/* Main Area */
+.main { margin-left: var(--sidebar); flex: 1; padding: 40px 40px 100px; max-width: calc(100vw - var(--sidebar)); display: flex; flex-direction: column; align-items: center; }
+.main-content { width: 100%; max-width: 800px; }
+.topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 30px; width: 100%; max-width: 800px; }
+.t-title { font-family: 'Instrument Serif', serif; font-style: italic; font-size: 24px; font-weight: 800; letter-spacing: -0.5px; }
+.btn-sm { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text-muted); padding: 8px 14px; cursor: pointer; font-size: 12px; font-weight: 500; display: flex; align-items: center; gap: 6px; transition: all .2s; text-decoration: none; box-shadow: 0 1px 2px rgba(0,0,0,0.02); }
+.btn-sm:hover { border-color: var(--border-hover); color: var(--text); transform: translateY(-1px); box-shadow: 0 3px 6px rgba(0,0,0,0.04); }
+
+.main-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.03); overflow: hidden; margin-bottom: 24px; transition: border-color 0.2s; }
+.main-card.drag-over { border-color: var(--accent); background: var(--accent-dim); }
+.c-head { padding: 16px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; background: #FAFAFA; }
+.c-title { font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+.c-chars { font-size: 12px; color: var(--text-dim); font-family: 'DM Mono', monospace; }
+
+/* Upload / Input Area */
+.input-area { position: relative; padding: 20px; min-height: 200px; display: flex; flex-direction: column; }
+textarea { flex: 1; background: transparent; border: none; resize: none; font-size: 15px; line-height: 1.6; color: var(--text); font-family: 'Inter', sans-serif; width: 100%; outline: none; }
+textarea::placeholder { color: var(--text-dim); }
+.upload-zone { margin-top: 10px; padding: 20px; border: 2px dashed var(--border); border-radius: var(--radius); text-align: center; color: var(--text-muted); cursor: pointer; transition: all 0.2s; font-size: 13px; display: flex; flex-direction: column; align-items: center; gap: 8px; background: #FAFAFA; }
+.upload-zone:hover, .upload-zone.drag-active { border-color: var(--accent); background: var(--accent-dim); color: var(--accent); }
+.upload-zone svg { width: 24px; height: 24px; opacity: 0.6; }
+.image-preview { display: none; margin-top: 15px; position: relative; width: fit-content; }
+.image-preview img { max-width: 100%; max-height: 200px; border-radius: var(--radius); border: 1px solid var(--border); }
+.remove-img { position: absolute; top: -10px; right: -10px; background: var(--surface); border: 1px solid var(--border); border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--red); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+
+.c-foot { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; background: #FAFAFA; }
+.ctx-row { display: flex; gap: 10px; flex: 1; flex-wrap: wrap; }
+.ctx-inp { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font-size: 13px; padding: 10px 14px; width: 180px; outline: none; transition: all .2s; box-shadow: inset 0 1px 2px rgba(0,0,0,0.01); }
+.ctx-inp:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(196,129,58,0.1); }
+.ctx-inp::placeholder { color: var(--text-dim); }
+
+.btn-run { background: var(--text); border: 1px solid var(--text); border-radius: var(--radius-sm); color: #fff; font-size: 13px; font-weight: 500; padding: 10px 24px; cursor: pointer; transition: all .2s cubic-bezier(0.16, 1, 0.3, 1); display: flex; align-items: center; gap: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+.btn-run:hover { background: #333; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+.btn-run:active { transform: translateY(0); }
+.btn-run:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+.spinner { width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin .7s linear infinite; display: none; }
+
+/* Results */
+.res-section { animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both; width: 100%; max-width: 800px; }
+.res-hdr { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; padding: 0 4px; }
+.res-lbl { font-size: 13px; font-weight: 600; color: var(--text); letter-spacing: 0.02em; }
+.res-meta { font-size: 12px; color: var(--text-dim); font-family: 'DM Mono', monospace; }
+
+.sum-box { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px 24px; margin-bottom: 24px; font-size: 14px; color: var(--text-muted); line-height: 1.7; box-shadow: 0 4px 12px rgba(0,0,0,0.02); }
+.sum-lbl { font-size: 11px; font-weight: 600; color: var(--text); text-transform: uppercase; margin-bottom: 10px; letter-spacing: 0.05em; display: flex; align-items: center; gap: 6px; }
+.sum-lbl::before { content: ''; display: block; width: 6px; height: 6px; background: var(--accent); border-radius: 50%; }
+
+.a-grid { display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; }
+.a-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px; display: flex; gap: 14px; align-items: flex-start; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); animation: fadeUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both; cursor: pointer; position: relative; box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
+.a-card:hover { border-color: var(--border-hover); transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,0.05); }
+.a-card.completed { opacity: 0.5; background: var(--surface2); transform: none; box-shadow: none; border-color: var(--border); }
+.a-card.completed .a-task { text-decoration: line-through; color: var(--text-dim); }
+
+.checkbox { width: 20px; height: 20px; border: 2px solid var(--border-hover); border-radius: 4px; flex-shrink: 0; margin-top: 2px; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
+.a-card.completed .checkbox { background: var(--text); border-color: var(--text); }
+.checkbox svg { width: 12px; height: 12px; color: #fff; opacity: 0; transform: scale(0.5); transition: all 0.2s; }
+.a-card.completed .checkbox svg { opacity: 1; transform: scale(1); }
+
+.a-body { flex: 1; min-width: 0; }
+.a-task { font-size: 15px; font-weight: 500; color: var(--text); margin-bottom: 10px; line-height: 1.4; transition: color 0.2s; }
+.a-meta { display: flex; gap: 16px; flex-wrap: wrap; }
+.m-chip { font-size: 12px; color: var(--text-dim); display: flex; align-items: center; gap: 6px; }
+.m-chip svg { width: 14px; height: 14px; opacity: 0.7; }
+
+.p-badge { font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 20px; white-space: nowrap; flex-shrink: 0; letter-spacing: 0.02em; text-transform: uppercase; }
+.p-high { background: var(--red-dim); color: var(--red); }
+.p-medium { background: var(--amber-dim); color: var(--amber); }
+.p-low { background: var(--green-dim); color: var(--green); }
+
+/* Cloud Popout */
+.cloud-popout { position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%) translateY(10px) scale(0.95); opacity: 0; pointer-events: none; background: var(--text); color: #fff; padding: 14px 18px; border-radius: 12px; font-size: 13px; line-height: 1.5; width: max-content; max-width: 300px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); z-index: 10; margin-bottom: 12px; font-family: 'Inter', sans-serif; }
+.cloud-popout::after { content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); border-width: 8px; border-style: solid; border-color: var(--text) transparent transparent transparent; }
+.a-card:not(.completed):hover .cloud-popout { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); pointer-events: auto; }
+.cloud-prompt-title { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: rgba(255,255,255,0.6); margin-bottom: 4px; font-weight: 600; }
+.cloud-prompt-text { margin-bottom: 10px; font-family: 'DM Mono', monospace; font-size: 12px; color: rgba(255,255,255,0.9); }
+.cloud-ai-rec { border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px; display: flex; align-items: flex-start; gap: 8px; }
+.cloud-ai-icon { color: var(--accent); margin-top: 2px; }
+.cloud-ai-icon svg { width: 14px; height: 14px; }
+.cloud-ai-text { font-size: 12px; color: #fff; font-weight: 500; }
+.cloud-spinner { width: 12px; height: 12px; border: 2px solid rgba(255,255,255,0.2); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
+
+.exp-bar { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 30px; }
+.btn-exp { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text-muted); font-size: 13px; font-weight: 500; padding: 10px 16px; cursor: pointer; transition: all .2s; display: flex; align-items: center; gap: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.02); }
+.btn-exp:hover { border-color: var(--border-hover); color: var(--text); transform: translateY(-1px); box-shadow: 0 3px 8px rgba(0,0,0,0.05); }
+.btn-exp:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+
+.err-box { background: var(--red-dim); border: 1px solid rgba(166,75,66,.2); border-radius: var(--radius); padding: 14px 18px; font-size: 14px; font-weight: 500; color: var(--red); margin-bottom: 20px; display: none; width: 100%; max-width: 800px; align-items: center; gap: 10px; }
+.toast { position: fixed; bottom: 24px; right: 24px; background: var(--text); border-radius: 8px; padding: 12px 20px; font-size: 14px; font-weight: 500; color: #fff; z-index: 100; box-shadow: 0 10px 30px rgba(0,0,0,0.15); display: none; transform: translateY(20px); opacity: 0; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+.toast.show { transform: translateY(0); opacity: 1; }
+
+.s-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 19; backdrop-filter: blur(4px); }
+.btn-menu { display: none; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 8px; cursor: pointer; color: var(--text); }
+.btn-menu svg { width: 16px; height: 16px; display: block; }
+
+@media(max-width:768px) {
+  .sidebar { transform: translateX(-100%); }
+  .sidebar.open { transform: translateX(0); }
+  .s-overlay.open { display: block; }
+  .main { margin-left: 0; max-width: 100%; padding: 24px 20px 80px; }
+  .btn-menu { display: flex; align-items: center; }
+  .ctx-row { flex-direction: column; }
+  .ctx-inp { width: 100%; }
+  .btn-run { justify-content: center; width: 100%; }
+  .c-foot { flex-direction: column; align-items: stretch; }
+  .cloud-popout { display: none !important; } /* Hard to use hover on mobile */
+}
+@keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes spin { to { transform: rotate(360deg); } }
 </style>
 </head>
 <body>
 <div class="layout">
-
 <aside class="sidebar" id="sidebar">
   <div class="sidebar-head">
     <div class="s-logo">
-      <div class="logo-icon"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M3 8h7M3 12h5" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/><circle cx="13" cy="11" r="2.5" fill="#fff" opacity=".9"/></svg></div>
+      <div class="logo-icon"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M3 8h7M3 12h5" stroke="#fff" stroke-width="2" stroke-linecap="round"/><circle cx="13" cy="11" r="2.5" fill="#fff"/></svg></div>
       <span class="logo-name">ActionPulse</span>
     </div>
     <div class="user-row">
-      <div class="u-avatar">A</div>
-      <span class="u-email">Current release · text extraction</span>
-      <a class="btn-so" href="/">Home</a>
+      <div class="u-avatar" id="uAvatar">?</div>
+      <span class="u-email" id="uEmail">Loading...</span>
+      <button class="btn-so" onclick="signOut()">Sign out</button>
     </div>
   </div>
-  <div class="s-section">Workspace <span class="h-count">Live</span></div>
-  <div class="h-list">
-    <div class="h-item active">
-      <div class="h-ico"><svg viewBox="0 0 12 12" fill="none"><path d="M2 3h8M2 6h6M2 9h4" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg></div>
-      <div class="h-body">
-        <div class="h-name">Paste notes</div>
-        <div class="h-meta"><span>Working now</span><span class="h-src h-src-text">core flow</span></div>
-      </div>
-    </div>
-    <div class="h-item">
-      <div class="h-ico"><svg viewBox="0 0 12 12" fill="none"><rect x="3.5" y="1" width="5" height="6" rx="2.5" stroke="currentColor" stroke-width="1.1"/><path d="M2 7a4 4 0 008 0M6 11V9" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg></div>
-      <div class="h-body">
-        <div class="h-name">Audio transcription</div>
-        <div class="h-meta"><span>Future plan</span><span class="h-src h-src-audio">paused</span></div>
-      </div>
-    </div>
-    <div class="h-item">
-      <div class="h-ico"><svg viewBox="0 0 12 12" fill="none"><circle cx="6" cy="4" r="2" stroke="currentColor" stroke-width="1.1"/><path d="M2 10c0-2.2 1.8-4 4-4s4 1.8 4 4" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg></div>
-      <div class="h-body">
-        <div class="h-name">Accounts and history</div>
-        <div class="h-meta"><span>Future plan</span><span class="h-src h-src-text">paused</span></div>
-      </div>
-    </div>
-    <div class="h-empty">The earlier ActionPulse layout is back.<br>The live backend remains focused on text extraction only.</div>
+  <div class="s-section">Meeting History <span class="h-count" id="hCount">0</span></div>
+  <div class="h-list" id="hList">
+    <div class="h-empty" id="hEmpty">No meetings yet.<br>Extract your first one!</div>
   </div>
 </aside>
 
 <div class="s-overlay" id="sOverlay" onclick="closeSb()"></div>
 
 <main class="main">
-  <div class="topbar">
-    <div style="display:flex;align-items:center;gap:9px">
-      <button class="btn-menu" id="btnMenu" onclick="toggleSb()">
-        <svg viewBox="0 0 16 16" fill="none"><path d="M2 4h12M2 8h12M2 12h12" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
-      </button>
-      <span class="t-title">New meeting</span>
-    </div>
-    <div class="t-right">
-      <a class="btn-sm" href="/">
-        <svg viewBox="0 0 13 13" fill="none"><path d="M6.5 1v11M1 6.5h11" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
-        Home
-      </a>
-    </div>
-  </div>
-
-  <div class="inp-tabs">
-    <button class="inp-tab active" id="tText">
-      <svg viewBox="0 0 13 13" fill="none"><path d="M2 3h9M2 6h7M2 9h5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
-      Paste notes
-    </button>
-    <button class="inp-tab" id="tAudio" onclick="showFuturePlan()">
-      <svg viewBox="0 0 13 13" fill="none"><rect x="4.5" y="1" width="4" height="7" rx="2" stroke="currentColor" stroke-width="1.2"/><path d="M2 7.5a4.5 4.5 0 009 0M6.5 12v-1" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
-      Record audio
-    </button>
-  </div>
-
-  <div class="audio-card" id="audioCard">
-    <div class="a-title">Audio transcription is a future plan</div>
-    <div class="a-sub">This tab is shown to preserve the original app design. The current backend only supports pasted meeting notes.</div>
-    <button class="rec-btn" type="button" onclick="showFuturePlan()">
-      <svg viewBox="0 0 24 24" fill="#fff"><circle cx="12" cy="12" r="6"/></svg>
-    </button>
-    <div class="rec-time">0:00</div>
-    <div class="rec-stat">Use the text tab for the live workflow.</div>
-  </div>
-
-  <div class="note-box">
-    The restored UI keeps the original ActionPulse feel. Only the text extraction flow is active right now, so auth, history, billing, and audio remain visual placeholders.
-  </div>
-
-  <div class="main-card" id="textCard">
-    <div class="c-head">
-      <span class="c-title">Meeting notes</span>
-      <span class="c-chars" id="chars">0 chars</span>
-    </div>
-    <textarea id="notesInput" placeholder="Paste your raw meeting notes here...&#10;&#10;Example: Discussed Q2 roadmap. John will set up user interviews by Friday. Sarah needs to finish competitor analysis by Monday. Rahul to send sprint planning invite today." oninput="updChars()"></textarea>
-    <div class="c-foot">
-      <div class="ctx-row">
-        <input type="text" class="ctx-inp" id="mName" placeholder="Meeting name">
-        <input type="text" class="ctx-inp" id="mAtten" placeholder="Attendees">
+  <div class="main-content">
+    <div class="topbar">
+      <div style="display:flex;align-items:center;gap:12px">
+        <button class="btn-menu" onclick="toggleSb()">
+          <svg viewBox="0 0 16 16" fill="none"><path d="M2 4h12M2 8h12M2 12h12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        </button>
+        <span class="t-title">New Extract</span>
       </div>
-      <button class="btn-run" id="runBtn" onclick="runExtract()">
-        <div class="spinner" id="spinner"></div>
-        <span id="btnTxt">Extract actions</span>
-      </button>
+      <a class="btn-sm" href="/">Home</a>
     </div>
-  </div>
 
-  <div class="err-box" id="errBox"></div>
+    <div class="main-card" id="inputCard">
+      <div class="c-head">
+        <span class="c-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+          Meeting Notes
+        </span>
+        <span class="c-chars" id="chars">0 chars</span>
+      </div>
+      <div class="input-area" id="dropZone">
+        <textarea id="notesInput" placeholder="Paste your raw meeting notes here...&#10;&#10;Or drop an image of handwritten notes below." oninput="updChars()"></textarea>
+        
+        <div class="image-preview" id="imgPreview">
+          <img id="imgThumbnail" src="" alt="Notes preview">
+          <div class="remove-img" onclick="removeImage()">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </div>
+        </div>
 
-  <div class="res-section" id="resSection" style="display:none">
-    <div class="res-hdr">
-      <span class="res-lbl">Action items</span>
-      <span class="res-meta" id="resMeta"></span>
+        <label class="upload-zone" id="uploadZoneLabel">
+          <input type="file" id="fileInput" accept="image/*" style="display:none" onchange="handleFileSelect(event)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+          <span>Drop an image of your notes here or <strong>click to upload</strong>.</span>
+        </label>
+      </div>
+
+      <div class="c-foot">
+        <div class="ctx-row">
+          <input type="text" class="ctx-inp" id="mName" placeholder="Meeting name (e.g. Q2 Planning)">
+          <input type="text" class="ctx-inp" id="mAtten" placeholder="Attendees (e.g. John, Sarah)">
+        </div>
+        <button class="btn-run" id="runBtn" onclick="runExtract()">
+          <div class="spinner" id="spinner"></div>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14"></path><path d="M12 5l7 7-7 7"></path></svg>
+          <span id="btnTxt" style="margin-left: 6px">Extract Actions</span>
+        </button>
+      </div>
     </div>
-    <div class="sum-box">
-      <div class="sum-lbl">Meeting summary</div>
-      <div id="sumTxt"></div>
+
+    <div class="err-box" id="errBox" style="display:none">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+      <span id="errMsg"></span>
     </div>
-    <div class="a-grid" id="aGrid"></div>
-    <div class="exp-bar">
-      <button class="btn-exp" id="copyMdBtn" onclick="cpMd()"><svg viewBox="0 0 12 12" fill="none"><rect x="1" y="3" width="7" height="8" rx="1" stroke="currentColor" stroke-width="1.2"/><path d="M4 1h6a1 1 0 011 1v8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>Copy markdown</button>
-      <button class="btn-exp" id="copyJsonBtn" onclick="cpJSON()"><svg viewBox="0 0 12 12" fill="none"><path d="M4 2H2a1 1 0 00-1 1v6a1 1 0 001 1h8a1 1 0 001-1V3a1 1 0 00-1-1H8M4 2V1h4v1M4 2h4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>Copy JSON</button>
-      <button class="btn-exp" onclick="clearAll()"><svg viewBox="0 0 12 12" fill="none"><path d="M2 3h8M5 3V2h2v1M4.5 3l.5 6h2l.5-6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Clear</button>
+
+    <div class="res-section" id="resSection" style="display:none">
+      <div class="res-hdr">
+        <span class="res-lbl">Extraction Results</span>
+        <span class="res-meta" id="resMeta"></span>
+      </div>
+      <div class="sum-box">
+        <div class="sum-lbl">Meeting Summary</div>
+        <div id="sumTxt"></div>
+      </div>
+      
+      <div class="res-hdr" style="margin-top:30px">
+        <span class="res-lbl">Action Items</span>
+      </div>
+      <div class="a-grid" id="aGrid"></div>
+      
+      <div class="exp-bar">
+        <button class="btn-exp" id="copyMdBtn" onclick="cpMd()" disabled>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+          Copy Markdown
+        </button>
+        <button class="btn-exp" id="copyJsonBtn" onclick="cpJSON()" disabled>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+          Copy JSON
+        </button>
+        <button class="btn-exp" onclick="clearAll()" style="margin-left:auto">Start Over</button>
+      </div>
     </div>
   </div>
 </main>
@@ -238,64 +284,284 @@ textarea::placeholder{color:var(--text-dim)}
 <div class="toast" id="toast"></div>
 
 <script>
-let items = [];
-setExportState(false);
+let user = null, items = [], history = [];
+let currentImageBase64 = null;
+let aiCache = {}; // Cache for /api/best-ai results
 
+// ── Auth check ──
+(async () => {
+  try {
+    const res = await fetch('/api/auth/me');
+    if (!res.ok) throw new Error('Not logged in');
+    const { user: u } = await res.json();
+    if (!u) throw new Error('Not logged in');
+    
+    user = u;
+    const name = user.name || user.email;
+    document.getElementById('uEmail').textContent = user.email;
+    document.getElementById('uAvatar').textContent = name.charAt(0).toUpperCase();
+    loadHistory();
+  } catch (err) {
+    location.href = '/login';
+  }
+})();
+
+async function signOut() {
+  await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+  location.href = '/login';
+}
+
+// ── File Upload & Drag-and-Drop ──
+const dropZone = document.getElementById('dropZone');
+['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+  dropZone.addEventListener(eventName, preventDefaults, false);
+});
+function preventDefaults(e) { e.preventDefault(); e.stopPropagation(); }
+['dragenter', 'dragover'].forEach(eventName => {
+  dropZone.addEventListener(eventName, () => {
+    document.getElementById('inputCard').classList.add('drag-over');
+    document.getElementById('uploadZoneLabel').classList.add('drag-active');
+  }, false);
+});
+['dragleave', 'drop'].forEach(eventName => {
+  dropZone.addEventListener(eventName, () => {
+    document.getElementById('inputCard').classList.remove('drag-over');
+    document.getElementById('uploadZoneLabel').classList.remove('drag-active');
+  }, false);
+});
+dropZone.addEventListener('drop', handleDrop, false);
+
+function handleDrop(e) {
+  const dt = e.dataTransfer;
+  const files = dt.files;
+  if(files && files[0]) processFile(files[0]);
+}
+function handleFileSelect(e) {
+  if(e.target.files && e.target.files[0]) processFile(e.target.files[0]);
+}
+
+function processFile(file) {
+  if(!file.type.startsWith('image/')) {
+    showErr('Please upload a valid image file.');
+    return;
+  }
+  if(file.size > 4 * 1024 * 1024) {
+    showErr('Image is too large. Please keep it under 4MB.');
+    return;
+  }
+  hideErr();
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    // Save raw base64 data without prefix for backend
+    const dataUrl = e.target.result;
+    currentImageBase64 = dataUrl.split(',')[1];
+    
+    // Show preview
+    document.getElementById('imgThumbnail').src = dataUrl;
+    document.getElementById('imgPreview').style.display = 'block';
+    document.getElementById('uploadZoneLabel').style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+}
+
+function removeImage() {
+  currentImageBase64 = null;
+  document.getElementById('imgPreview').style.display = 'none';
+  document.getElementById('uploadZoneLabel').style.display = 'flex';
+  document.getElementById('fileInput').value = '';
+}
+
+// ── History ──
+async function loadHistory() {
+  try {
+    const res = await fetch('/api/meetings');
+    if (!res.ok) throw new Error();
+    const data = await res.json();
+    history = data || [];
+    renderHistory();
+  } catch {
+    // API not implemented yet or failed
+    history = [];
+    renderHistory();
+  }
+}
+
+function renderHistory() {
+  const el = document.getElementById('hList');
+  document.getElementById('hCount').textContent = history.length;
+  if (!history.length) { el.innerHTML = '<div class="h-empty">No meetings yet.<br>Extract your first one!</div>'; return; }
+  el.innerHTML = history.map(h => `
+    <div class="h-item" onclick="loadMeeting('${h.id}')">
+      <div class="h-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg></div>
+      <div class="h-body">
+        <div class="h-name">${esc(h.meeting_name || 'Untitled')}</div>
+        <div class="h-meta"><span>${new Date(h.created_at).toLocaleDateString()}</span></div>
+      </div>
+    </div>`).join('');
+}
+
+async function loadMeeting(id) {
+  try {
+    const res = await fetch(`/api/meetings/${id}`);
+    if (!res.ok) throw new Error();
+    const data = await res.json();
+    if (!data) return;
+    document.getElementById('mName').value = data.meeting_name || '';
+    items = typeof data.action_items === 'string' ? JSON.parse(data.action_items) : (data.action_items || []);
+    renderRes({ summary: data.summary, action_items: items });
+    document.getElementById('copyMdBtn').disabled = false;
+    document.getElementById('copyJsonBtn').disabled = false;
+    closeSb();
+  } catch {}
+}
+
+// ── Sidebar ──
 function toggleSb() { document.getElementById('sidebar').classList.toggle('open'); document.getElementById('sOverlay').classList.toggle('open'); }
-function closeSb()  { document.getElementById('sidebar').classList.remove('open');  document.getElementById('sOverlay').classList.remove('open'); }
-function showFuturePlan(){toast('Audio, auth, billing, and history are future plans in the current release.')}
+function closeSb()  { document.getElementById('sidebar').classList.remove('open'); document.getElementById('sOverlay').classList.remove('open'); }
 
 function updChars() { document.getElementById('chars').textContent = document.getElementById('notesInput').value.length.toLocaleString() + ' chars'; }
 
+// ── Extract ──
 async function runExtract() {
   const notes = document.getElementById('notesInput').value.trim();
-  if (!notes) { showErr('Paste your meeting notes first.'); return; }
+  if (!notes && !currentImageBase64) { showErr('Please paste meeting notes or upload an image.'); return; }
   hideErr(); setLoad(true);
   document.getElementById('resSection').style.display = 'none';
   try {
+    const payload = {
+      meetingName: document.getElementById('mName').value.trim(),
+      attendees:   document.getElementById('mAtten').value.trim()
+    };
+    if (notes) payload.notes = notes;
+    if (currentImageBase64) payload.imageBase64 = currentImageBase64;
+
     const r = await fetch('/api/extract', {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({
-        notes,
-        meetingName: document.getElementById('mName').value.trim(),
-        attendees: document.getElementById('mAtten').value.trim()
-      })
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify(payload)
     });
     const d = await r.json();
-    if (!r.ok) throw new Error(d.error || 'Error');
+    if (!r.ok) throw new Error(d.error || 'Error extracting actions');
     items = d.action_items || [];
-    setExportState(true);
+    document.getElementById('copyMdBtn').disabled = false;
+    document.getElementById('copyJsonBtn').disabled = false;
     renderRes(d);
-  } catch(e) { showErr(e.message || 'Something went wrong'); }
+    loadHistory(); // refresh sidebar
+  } catch(e) { showErr(e.message || 'Something went wrong. Please try again.'); }
   finally { setLoad(false); }
+}
+
+function toggleTask(el) {
+  el.classList.toggle('completed');
+}
+
+// ── Lazy Loading AI Recommendations ──
+async function loadBestAI(prompt, elId) {
+  const resEl = document.getElementById(elId);
+  if (!resEl) return;
+  if (aiCache[prompt]) {
+    resEl.innerHTML = renderAIRec(aiCache[prompt]);
+    return;
+  }
+  
+  try {
+    const r = await fetch('/api/best-ai', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ prompt })
+    });
+    const d = await r.json();
+    if(r.ok && d.recommendation) {
+      aiCache[prompt] = d.recommendation;
+      const target = document.getElementById(elId);
+      if(target) target.innerHTML = renderAIRec(d.recommendation);
+    } else {
+      throw new Error("Failed");
+    }
+  } catch(e) {
+    const target = document.getElementById(elId);
+    if(target) target.innerHTML = \`<div class="cloud-ai-text" style="color:var(--red-dim)">Failed to load recommendation</div>\`;
+  }
+}
+
+function renderAIRec(recText) {
+  return \`
+    <div class="cloud-ai-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"></path></svg>
+    </div>
+    <div class="cloud-ai-text">\${esc(recText)}</div>
+  \`;
+}
+
+let hoverTimers = {};
+
+function handleHover(e, prompt, idx) {
+  const card = e.currentTarget;
+  if (card.classList.contains('completed')) return;
+  
+  const elId = 'ai-rec-' + idx;
+  if (!aiCache[prompt] && document.getElementById(elId) && document.getElementById(elId).innerHTML.includes('cloud-spinner')) {
+    if(!hoverTimers[idx]) {
+      hoverTimers[idx] = setTimeout(() => {
+        loadBestAI(prompt, elId);
+      }, 300);
+    }
+  }
+}
+
+function handleMouseLeave(e, idx) {
+  if(hoverTimers[idx]) {
+    clearTimeout(hoverTimers[idx]);
+    hoverTimers[idx] = null;
+  }
 }
 
 function renderRes(d) {
   document.getElementById('sumTxt').textContent = d.summary || '';
   document.getElementById('resMeta').textContent = (d.action_items?.length||0) + ' items found';
-  const g = document.getElementById('aGrid');
-  g.innerHTML = '';
+  const g = document.getElementById('aGrid'); g.innerHTML = '';
   (d.action_items||[]).forEach((item, i) => {
     const c = document.createElement('div');
-    c.className = 'a-card'; c.style.animationDelay = (i*.06)+'s';
+    c.className = 'a-card'; 
+    c.style.animationDelay = (i*.06)+'s';
+    c.onclick = function() { toggleTask(this); };
+    
+    // Setup lazy loading on hover
+    if (item.ai_prompt) {
+      c.onmouseenter = (e) => handleHover(e, item.ai_prompt, i);
+      c.onmouseleave = (e) => handleMouseLeave(e, i);
+    }
+    
     const pc = item.priority==='high'?'p-high':item.priority==='medium'?'p-medium':'p-low';
-    const deps = Array.isArray(item.dependencies) && item.dependencies.length ? `<div class="a-prompt"><strong>Dependencies</strong>${esc(item.dependencies.join(', '))}</div>` : '';
-    const steps = Array.isArray(item.steps) && item.steps.length ? `<div class="a-prompt"><strong>Next steps</strong>${esc(item.steps.join(' → '))}</div>` : '';
-    c.innerHTML = `
-      <div class="a-body">
-        <div class="a-task">${esc(item.task)}</div>
-        <div class="a-meta">
-          <span class="m-chip"><svg viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="4.5" stroke="currentColor" stroke-width="1.2"/><path d="M6 3.5V6l2 1.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>${esc(item.deadline)}</span>
-          <span class="m-chip"><svg viewBox="0 0 12 12" fill="none"><circle cx="6" cy="4" r="2" stroke="currentColor" stroke-width="1.2"/><path d="M2 10c0-2.2 1.8-4 4-4s4 1.8 4 4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>${esc(item.owner)}</span>
-          <span class="m-chip">${esc(item.category || 'other')}</span>
+    
+    let cloudHtml = '';
+    if (item.ai_prompt) {
+      cloudHtml = \`
+        <div class="cloud-popout">
+          <div class="cloud-prompt-title">Prompt</div>
+          <div class="cloud-prompt-text">\${esc(item.ai_prompt)}</div>
+          <div class="cloud-ai-rec" id="ai-rec-\${i}">
+            <div class="cloud-spinner"></div>
+            <div class="cloud-ai-text" style="color:rgba(255,255,255,0.7)">Analyzing tools...</div>
+          </div>
         </div>
-        ${item.impact ? `<div class="a-prompt"><strong>Why it matters</strong>${esc(item.impact)}</div>` : ''}
-        ${deps}
-        ${steps}
-        ${item.ai_prompt ? `<div class="a-prompt"><strong>Best for ${esc(item.ai_platform || 'AI')}</strong>${esc(item.ai_prompt)}</div>` : ''}
+      \`;
+    }
+
+    c.innerHTML = \`
+      <div class="checkbox"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
+      <div class="a-body">
+        <div class="a-task">\${esc(item.task)}</div>
+        <div class="a-meta">
+          <span class="m-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>\${esc(item.deadline)}</span>
+          <span class="m-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>\${esc(item.owner)}</span>
+          <span class="m-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>\${esc(item.category || 'other')}</span>
+        </div>
+        \${cloudHtml}
       </div>
-      <span class="p-badge ${pc}">${esc(item.priority)}</span>`;
+      <span class="p-badge \${pc}">\${esc(item.priority)}</span>\`;
     g.appendChild(c);
   });
   document.getElementById('resSection').style.display = 'block';
@@ -305,32 +571,40 @@ function renderRes(d) {
 function cpMd() {
   if (!items.length) return;
   const sum = document.getElementById('sumTxt').textContent;
-  const nm  = document.getElementById('mName').value||'Meeting';
-  let md = `# ${nm} — Action Items\n\n**Summary:** ${sum}\n\n## Actions\n\n`;
-  items.forEach((a,i)=>{ md+=`${i+1}. **${a.task}**\n   - Owner: ${a.owner}\n   - Deadline: ${a.deadline}\n   - Priority: ${a.priority}\n\n`; });
+  const nm  = document.getElementById('mName').value||'Meeting Notes';
+  let md = \`# \${nm}\n\n**Summary:** \${sum}\n\n## Actions\n\n\`;
+  items.forEach((a,i)=>{ md+=\`- [ ] **\${a.task}** (@\${a.owner}, due \${a.deadline}) [\${a.priority}]\n\`; });
   navigator.clipboard.writeText(md).then(()=>toast('Copied as markdown'));
 }
-
 function cpJSON() {
   if (!items.length) return;
   navigator.clipboard.writeText(JSON.stringify({action_items:items},null,2)).then(()=>toast('Copied as JSON'));
 }
-
 function clearAll() {
   document.getElementById('notesInput').value='';
   document.getElementById('mName').value='';
   document.getElementById('mAtten').value='';
+  removeImage();
   document.getElementById('resSection').style.display='none';
   document.getElementById('chars').textContent='0 chars';
-  items=[]; hideErr(); setExportState(false);
+  items=[]; hideErr();
+  document.getElementById('copyMdBtn').disabled=true;
+  document.getElementById('copyJsonBtn').disabled=true;
 }
 
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
-function setLoad(on){document.getElementById('runBtn').disabled=on;document.getElementById('spinner').style.display=on?'block':'none';document.getElementById('btnTxt').textContent=on?'Processing...':'Extract actions';}
-function showErr(m){const e=document.getElementById('errBox');e.textContent=m;e.style.display='block';}
+function setLoad(on){
+  const btn = document.getElementById('runBtn');
+  btn.disabled = on;
+  document.getElementById('spinner').style.display = on ? 'block' : 'none';
+  document.getElementById('btnTxt').textContent = on ? 'Processing...' : 'Extract Actions';
+  // Also toggle the icon
+  const icon = btn.querySelector('svg');
+  if (icon) icon.style.display = on ? 'none' : 'block';
+}
+function showErr(m){const e=document.getElementById('errBox');document.getElementById('errMsg').textContent=m;e.style.display='flex';}
 function hideErr(){document.getElementById('errBox').style.display='none';}
-function setExportState(enabled){document.getElementById('copyMdBtn').disabled=!enabled;document.getElementById('copyJsonBtn').disabled=!enabled;}
-function toast(m){const t=document.getElementById('toast');t.textContent=m;t.style.display='block';clearTimeout(t._t);t._t=setTimeout(()=>t.style.display='none',2200);}
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.style.display='block';setTimeout(()=>t.classList.add('show'),10);clearTimeout(t._t);t._t=setTimeout(()=>{t.classList.remove('show');setTimeout(()=>t.style.display='none',300);},2500);}
 document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='Enter')runExtract();});
 </script>
 </body>
